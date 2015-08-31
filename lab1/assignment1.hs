@@ -14,3 +14,8 @@ toRevDigits n | n > 0     = lastDigit n : toRevDigits (dropLastDigit n)
 doubleEveryOther :: [Integer] -> [Integer]
 doubleEveryOther (x:y:zs) = x:2*y:doubleEveryOther zs
 doubleEveryOther x = x
+
+-- Exercise 4
+sumDigits :: [Integer] -> Integer
+sumDigits [] = 0
+sumDigits (x:xs) = sum(toRevDigits x) + sumDigits xs
