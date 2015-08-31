@@ -25,6 +25,7 @@ doubleEveryOther (x1:xs) = (x1: doubleEveryOther xs)
 sumDigits :: [Integer] -> Integer
 sumDigits xs = sum (map (\x -> (mod x 10) + (quot x 10)) xs )
 
+
 -- Exercise 5
 luhn :: Integer -> Bool
 luhn x = (mod (sumDigits (doubleEveryOther (toRevDigits x))) 10) == 0
