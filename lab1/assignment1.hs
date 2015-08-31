@@ -19,3 +19,7 @@ doubleEveryOther x = x
 sumDigits :: [Integer] -> Integer
 sumDigits [] = 0
 sumDigits (x:xs) = sum(toRevDigits x) + sumDigits xs
+
+-- Exercise 5
+luhn :: Integer -> Bool
+luhn n = rem ((sumDigits.doubleEveryOther.toRevDigits) n) 10 == 0
