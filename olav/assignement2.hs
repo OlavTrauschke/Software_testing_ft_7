@@ -36,3 +36,5 @@ accusers :: Boy -> [Boy]
 accusers x = filter (\y -> (says y x) == Just True) boys
 
 guilty, honest :: [Boy]
+guilty = [x | x <- boys, length (accusers x) ==3]
+honest = concatMap accusers guilty
