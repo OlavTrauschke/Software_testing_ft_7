@@ -1,8 +1,9 @@
-sumPrimesLTTwoMillion :: Integer
-sumPrimesLTTwoMillion = sumSieve [2..2000000] 0
+import Prelude
 
-sumSieve :: [Integer] -> Integer -> Integer
-sumSieve [] result = result
-sumSieve (x:xs) result = sumSieve (filter (\y -> rem y x /= 0) xs) (result+x)
+sumPrimesLTTwoMillion :: Integer
+sumPrimesLTTwoMillion = sum (takeWhile (<2000000) (sieve [2..]))
+
+sieve :: [Integer] -> [Integer]
+sieve (x:xs) = x:(sieve [y|y <- xs, (mod y x) /= 0])
 
 --C stack overflow
