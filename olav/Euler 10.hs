@@ -1,9 +1,10 @@
 import Prelude
 
 sumPrimesLTTwoMillion :: Integer
-sumPrimesLTTwoMillion = sum (takeWhile (<2000000) (sieve [2..]))
+sumPrimesLTTwoMillion = sum (takeWhile (<2000000) primes)
 
-sieve :: [Integer] -> [Integer]
-sieve (x:xs) = x:(sieve [y|y <- xs, (mod y x) /= 0])
+primes :: [Integer]
+primes = 2:filter prime [3..]
 
---C stack overflow
+prime :: Integer -> Bool
+prime x = all (\ y -> rem x y /=0) (takeWhile (\ y -> y^2 <= x) primes)
