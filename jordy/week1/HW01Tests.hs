@@ -4,8 +4,8 @@
 
 module HW01Tests where
 
-import HW01
 import Testing
+import Assignment1
 
 -- Exercise 1 -----------------------------------------
 

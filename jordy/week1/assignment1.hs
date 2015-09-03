@@ -1,5 +1,4 @@
-import HW01Tests
-import Testing
+module Assignment1 where
 
 lastDigit :: Integer -> Integer
 lastDigit n = rem n 10
