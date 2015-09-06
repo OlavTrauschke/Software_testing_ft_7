@@ -25,10 +25,6 @@ perms (x:xs) = concat (map (insrt x) (perms xs)) where
         insrt x [] = [[x]]
         insrt x (y:ys) = (x:y:ys) : map (y:) (insrt x ys)
 
--- Number of primes in a list of numbers
-n_primes :: [Int] -> Int
-n_primes xs = length (filter prime xs)
-
 -- Delete duplicates
 del_dupl :: [Int] -> [Int]
 del_dupl [] = []
