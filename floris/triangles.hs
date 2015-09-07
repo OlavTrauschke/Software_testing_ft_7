@@ -4,6 +4,7 @@ import Data.List (delete,permutations)
 data Shape = NoTriangle | Equilateral 
            | Isosceles  | Rectangular | Other deriving (Eq,Show)
 
+-- First, tree definitions of the triangle function
 -- Olav
 noTriangle :: (Num a, Ord a) => a -> a -> a -> Bool
 noTriangle x y z = x + y < z || x + z < y || y + z < x || x <= 0 || y <= 0 || z <= 0
@@ -64,12 +65,14 @@ triangleJordy a b c | any (\(a:b:c:_) -> a + b <= c || a <= 0) (permutations [a,
                | otherwise = Other
 
 
--- Test triangle functions
+-- Section which determines validity of each function
+-- Floris
 type Sides = (Integer, Integer, Integer)
-type IdentFunc = Integer -> Integer -> Integer -> Shape
+type Triangle = Integer -> Integer -> Integer -> Shape
 
-cases :: [(Sides, Shape)]
-cases = [
+-- Test cases and outcome
+validCases :: [(Sides, Shape)]
+validCases = [
         ((0, 0, 0), NoTriangle),
         ((1, 1, 1), Equilateral),
         ((3, 4, 5), Rectangular),
@@ -77,23 +80,34 @@ cases = [
         ((5, 123, 5), NoTriangle)
     ]
 
-testFunc :: [(Sides, Shape)] -> IdentFunc -> Int
-testFunc cases f =
-    let
-        n = length cases
+-- Tests case, accounts for permutations of input params
+passes :: Triangle -> (Sides, Shape) -> Bool
+passes f ((a, b, c), expected) =
+    let tup [a,b,c] = (a,b,c) in -- Tuple to list
+    all (==True) [f pa pb pc == expected | 
+        x <- permutations [a, b, c],
+        (pa, pb, pc) <- [tup x]]
 
-        tuplist :: Sides -> [Integer]
-        tuplist (a,b,c) = [a,b,c]
+-- Generic tester, msgs accumulates error messages
+tester :: Show a => (a -> Bool) -> [String] -> [a] -> IO ()
+tester _ msgs []
+    | length msgs == 0      = putStrLn "Passed all cases"
+    | otherwise             = putStr (unlines msgs)
+tester f msgs (c:cs)
+    | (f c) == True         = tester f msgs cs
+    | otherwise             = tester f (("Failed test case " ++ (show c)) : msgs) cs
 
-        listtup :: [Integer] -> Sides
-        listtup [a,b,c] = (a,b,c)
+testTriangles f = tester (passes f) [] validCases
 
-        testCase input expected = 
-            all (==True) [
-                        f a b c == expected |
-                            tests <- permutations (tuplist input),
-                            (a, b, c) <- [listtup tests]
-                    ]
-    in
-    length filter testCase cases 
-    --print ((show (tuplist (1, 2, 3))) ++ (show (listtup [1, 2, 3])))
+-- Test with:
+-- testTriangles triangleAreg
+-- testTriangles triangleJordy
+-- testTriangles triangleOlav
+-- or runTests
+runTests = do
+    putStrLn "Areg:"
+    testTriangles triangleAreg
+    putStrLn "Jordy:"
+    testTriangles triangleJordy
+    putStrLn "Olav:"
+    testTriangles triangleOlav
