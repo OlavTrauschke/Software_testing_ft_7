@@ -4,7 +4,7 @@ import Data.List (delete,permutations)
 data Shape = NoTriangle | Equilateral 
            | Isosceles  | Rectangular | Other deriving (Eq,Show)
 
--- First, tree definitions of the triangle function
+-- First, three definitions of the triangle function
 -- Olav
 noTriangle :: (Num a, Ord a) => a -> a -> a -> Bool
 noTriangle x y z = x + y < z || x + z < y || y + z < x || x <= 0 || y <= 0 || z <= 0
