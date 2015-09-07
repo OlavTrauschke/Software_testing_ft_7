@@ -23,17 +23,12 @@ rectangular x y z
       a = minimum l
       c = maximum l
       b = head (delete a (delete c l))
-      in (not (noTriangle x y z)) && a^2+b^2 /= c^2
+      in a^2+b^2 == c^2
 
 isosceles :: (Num a, Ord a) => a -> a -> a -> Bool
 isosceles x y z
   | noTriangle x y z = False
-  | otherwise =
-      let
-        l = [x,y,z]
-        a = minimum l
-        b = minimum (delete a l)
-      in a == b
+  | otherwise = x == y || x == z || y == z
 
 other :: (Num a, Ord a) => a -> a -> a -> Bool
 other x y z
