@@ -8,6 +8,9 @@ isPermutation :: Eq a => [a] -> [a] -> Bool
 isPermutation [] [] = True
 isPermutation x y = elem x (permutations y)
 
+--Tests below
+--Usage: testRepeated 1 [number of tests] isPermutation
+
 sameLength :: [Int] -> [Int] -> Bool
 sameLength x y = (length x) == (length y)
 
@@ -24,30 +27,24 @@ flipEqual f x y = f x y == f y x
 
 testRepeated :: Int -> Int -> ([Int] -> [Int] -> Bool) -> IO ()
 testRepeated m n f
-  | m < n = do
+  | m <= n = do
     xs <- fmap nub genIntList
     ys <- fmap nub genIntList
-      if test f xs ys
+    if (test f xs ys)
       then do print ("pass on: " ++ show xs ++ " " ++ show ys)
-        testRepeated (m+1) n f
-      else error ("failed test on: " ++ show xs ++ " " ++ show ys)
-  | otherwise = do
-    xs <- fmap nub genIntList
-    ys <- fmap nub genIntList
-    if test f xs ys
-      then do print ("pass on: " ++ show xs ++ " " ++ show ys)
-        testRepeated (m+1) n f
-      else error ("failed test on: " ++ show xs ++ " " ++ show ys)
+              testRepeated (m+1) n f
+      else do error ("failed test on: " ++ show xs ++ " " ++ show ys)
+  | otherwise = return ()
 
 test :: ([Int] -> [Int] -> Bool) -> [Int] -> [Int] -> Bool
 test f xs ys = (f xs ys == (sameLength xs ys && sameElements xs ys)) && (flipEqual f xs ys)
 
 --Example from the lecture for generating random lists of integers, found at http://homepages.cwi.nl/~jve/courses/15/testing/lectures/Lecture2.html
---Adapted to fit in the context
+--Adapted to higher the changes on finding a permutation
 genIntList :: IO [Int]
 genIntList = do 
-  k <- getRandomInt 20
-  n <- getRandomInt 10
+  k <- getRandomInt 5
+  n <- getRandomInt 3
   getIntL k n
 
 getIntL :: Int -> Int -> IO [Int]
