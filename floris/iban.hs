@@ -3,13 +3,11 @@ import Data.Char
 -- 30 mins
 iban :: String -> Bool
 iban s = 
-    let
-        -- Helpers
-        strip s = filter (\c -> isAlphaNum c) s
-        shiftBack n s = concat [(drop n s), (take n s)]
-        charMap c = show ((ord (toUpper c)) - 55)           -- A/Z = 10/35, A = 65 ASCII
-        letterize s = concatMap (\c -> if (isAlpha c) then (charMap c) else [c]) s
-        toInt s = if length s > 0 then read s :: Integer else 0
+    let strip s         = filter (\c -> isAlphaNum c) s
+        shiftBack n s   = concat [(drop n s), (take n s)]
+        charMap c       = show ((ord (toUpper c)) - 55) -- A/Z = 10/35, A = 65 ASCII
+        letterize s     = concatMap (\c -> if (isAlpha c) then (charMap c) else [c]) s
+        toInt s         = if length s > 0 then read s :: Integer else 0
     in (toInt $ letterize $ shiftBack 4 (strip s)) `mod` 97 == 1
 
 -- Validation
