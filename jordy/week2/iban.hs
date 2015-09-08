@@ -3,7 +3,7 @@ module IBAN where
 import Data.Char
 
 iban :: String -> Bool
-iban n = hasAllowedChars n && calculateMod (read ((convertLetters.moveFirstFourChars.stripSpaces) n) :: Integer) == 1
+iban n = hasAllowedChars n && ((calculateMod.stringToInteger.convertLetters.moveFirstFourChars.stripSpaces) n == 1)
 
 -- Check for allowed chars (0-9A-Z(only uppercase!))
 hasAllowedChars :: String -> Bool
@@ -25,6 +25,9 @@ convertLetters :: String -> String
 convertLetters [] = []
 convertLetters (x:xs) | 65 <= (ord x) && (ord x) <= 90 = (show ((ord x) - 55)) ++ (convertLetters xs)
                       | otherwise = x:(convertLetters xs)
+
+stringToInteger :: String -> Integer
+stringToInteger s = read s :: Integer
 
 -- Calculate the mod 97
 calculateMod :: Integer -> Integer
