@@ -1,11 +1,10 @@
 
-module Lab2 where
+module Permutations where
  
 import Data.List
-import System.Random
-
 
 isPermutation :: Eq a => [a] -> [a] -> Bool
 isPermutation [] [] = True
-isPermutation (x:xs) ys  	| length (x:xs) /= length ys	= False
-				| otherwise			= (elem x ys) && (isPermutation xs (delete x ys))
+isPermutation (x:xs) ys = (elem x ys) && (isPermutation xs (delete x ys))
+isPermutation [] _ = False
+
