@@ -18,7 +18,7 @@ ibanChecks = [
         ("NL39 RABO 0300 0652 64", True),
         ("NL39 RABO 0300 0642 64", False),
         ("&$908@#()*€___  64", False),
-        ("", True)
+        ("", False)
     ]
 
 -- Generic tester, msgs accumulates error messages
