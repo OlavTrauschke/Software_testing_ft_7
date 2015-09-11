@@ -87,6 +87,18 @@ toRevDigits n | n > 0     = lastDigit n : toRevDigits (dropLastDigit n)
 sumDigits :: Integer -> Integer
 sumDigits x = sum (toRevDigits x)
 
---Executing problem56 finds 972
+-- Executing problem56 finds 972
 problem56 :: Integer
 problem56 = maximum [sumDigits (a^b) | a <- [0..100], b <- [0..100]]
+
+-- Anwser to problem1
+problem1 :: Integer
+problem1 = sum [x | x <- [0..999], mod x 3 == 0 || mod x 5 == 0]
+
+-- Anwser to problem2
+problem2 :: Integer
+problem2 = sum (filter (even) (takeWhile (< 4000000) fib))
+
+-- fibonaci sequence generator (for problem2) from Rosetta Code
+fib :: [Integer]
+fib = 1 : 2 : zipWith (+) fib (tail fib)
