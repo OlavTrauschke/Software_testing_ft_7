@@ -4,7 +4,7 @@ import Data.List (delete,permutations)
 data Shape = NoTriangle | Equilateral 
            | Isosceles  | Rectangular | Other deriving (Eq,Show)
 
--- First, three definitions of the triangle function
+-- First, three definitions of the triangle function, time spent unknown
 -- Olav
 noTriangle :: (Num a, Ord a) => a -> a -> a -> Bool
 noTriangle x y z = x + y < z || x + z < y || y + z < x || x <= 0 || y <= 0 || z <= 0
@@ -61,7 +61,7 @@ triangleJordy a b c | any (\(a:b:c:_) -> a + b <= c || a <= 0) (permutations [a,
 
 
 -- Section which determines validity of each function
--- Floris
+-- Floris, spent 3 hours messing with haskell
 type Sides = (Integer, Integer, Integer)
 type Triangle = Integer -> Integer -> Integer -> Shape
 

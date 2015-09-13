@@ -1,6 +1,15 @@
 import Data.Char
 
 -- Time taken: initially around 30 mins, with tester and rewrites about 90.
+
+-- The test fuction was copied from triangles.hs, the only difference is that
+-- this version encodes the failure state. To test the iban function,
+-- sample IBAN's were used from the reference text; to test the check digits
+-- one of these had one number changed. Two more tests check for random input
+-- and an empty string, both of which should not pass.
+
+-- Run the tester with testIbans.
+
 iban :: String -> Bool
 iban s = 
     let strip s         = filter (\c -> isAlphaNum c) s
