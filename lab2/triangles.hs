@@ -1,7 +1,6 @@
 module Lab2 where
 import Data.List (delete,permutations)
 
-<<<<<<< HEAD
 -- Somewhat different approach taken, Olav, Jordy and Areg wrote three
 -- triangle identification functions, Floris wrote a small test suite.
 
@@ -22,8 +21,6 @@ import Data.List (delete,permutations)
 -- To run the test suite, invoke the 'runTests' function. Test cases
 -- are found in the 'validCases' var.
 
-=======
->>>>>>> origin/master
 data Shape = NoTriangle | Equilateral 
            | Isosceles  | Rectangular | Other deriving (Eq,Show)
 
