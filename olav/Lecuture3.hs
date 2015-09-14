@@ -1,13 +1,10 @@
-﻿module Lecture3
+module Lecture3
 
 where
 
 import Data.List
 import Data.Char
 import Test.QuickCheck
-
-(.) :: (a -> b) -> (c -> a) -> (c -> b)
-f . g = \ x -> f (g x)
 
 infixl 2 #
 (#) :: (a -> b) -> (b -> c) -> (a -> c)
@@ -98,8 +95,8 @@ data Form = Prop Name
           | Neg  Form
           | Cnj [Form]
           | Dsj [Form]
-          | Impl Form Form 
-          | Equiv Form Form 
+          | Impl Form Form
+          | Equiv Form Form
           deriving Eq
 
 instance Show Form where 
@@ -249,3 +246,46 @@ nnf (Cnj fs) = Cnj (map nnf fs)
 nnf (Dsj fs) = Dsj (map nnf fs)
 nnf (Neg (Cnj fs)) = Dsj (map (nnf.Neg) fs)
 nnf (Neg (Dsj fs)) = Cnj (map (nnf.Neg) fs)
+
+--Exercise 1 below. We spent about an hour on this exercise
+
+{-Tested by verifying that
+contradiction (Cnj [(Prop 1),(Neg (Prop 1))]) is true,
+contradiction (Dsj [(Prop 1),(Neg (Prop 1))]) is false-}
+contradiction :: Form -> Bool
+contradiction = not.satisfiable
+
+--The function below was based strongly on satisfiable
+{-Tested by verifying that
+tautology (Dsj [(Prop 1),(Neg (Prop 1))]) is true,
+tautology (Cnj [(Prop 1),(Neg (Prop 1))]) is false-}
+tautology :: Form -> Bool
+tautology f = all (\ v -> evl v f) (allVals f)
+
+-- |logical entailment
+{-Tested by verifying that
+entails (Prop 1) (Prop 1) is true,
+entails (Neg (Prop 1)) (Neg (Prop 1)) is true,
+entails (Prop 1) (Neg (Prop 1)) is false,
+entails (Neg (Prop 1)) (Prop 1) is false-}
+entails :: Form -> Form -> Bool
+entails f g = tautology (Impl f g)
+
+-- |logical equivalence
+{-Tested by verifying that
+equiv (Prop 1) (Prop 1) is true,
+equiv (Impl (Prop 1) (Prop 2)) (Dsj [(Prop 2),(Neg (Prop 1))]) is true,
+equiv (Prop 1) (Neg (Prop 1)) is false-}
+equiv :: Form -> Form -> Bool
+equiv f g = tautology (Equiv f g)
+
+--Exercise 2 below. We spent about an hour and fifteen minutes on this exercise
+{-Tested first of all by verifying that all symbols parse by checking that
+parse "* (1 2 3)" is printed as [*(1 2 3)],
+parse "+ (1 2 3)" is printed as [+(1 2 3)],
+parse "-1" is printed as [-1],
+parse "(1 ==> 2)" is printed as [(1==>2)],
+and "(1 <=> 2)" is printed as [(1<=>2)].
+Furthermore, we tested by verifying that a longer formula, combining implication,
+equivalence, disjunction (which could as well have been conjunction obviously) and negation
+parsed right: parse "((1 ==> 2) <=> + (2 -1))" is printed as [((1==>2)<=>+(2 -1))]-}
