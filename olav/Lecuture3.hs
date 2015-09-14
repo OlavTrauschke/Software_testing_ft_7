@@ -279,7 +279,8 @@ equiv (Prop 1) (Neg (Prop 1)) is false-}
 equiv :: Form -> Form -> Bool
 equiv f g = tautology (Equiv f g)
 
---Exercise 2 below. We spent about an hour and fifteen minutes on this exercise
+--Exercise 2 below. We spent about an hour and fifteen minutes on this exercise.
+
 {-Tested first of all by verifying that all symbols parse by checking that
 parse "* (1 2 3)" is printed as [*(1 2 3)],
 parse "+ (1 2 3)" is printed as [+(1 2 3)],
@@ -289,3 +290,58 @@ and "(1 <=> 2)" is printed as [(1<=>2)].
 Furthermore, we tested by verifying that a longer formula, combining implication,
 equivalence, disjunction (which could as well have been conjunction obviously) and negation
 parsed right: parse "((1 ==> 2) <=> + (2 -1))" is printed as [((1==>2)<=>+(2 -1))]-}
+
+--Exercise 3 below.
+--Spent an hour on 14-9
+
+-- |convert a formula of propositional logic to conjunctive normal form
+toCnf :: Form -> Form
+toCnf = arrowfree # nnf # cnf
+
+-- |convert a formula of propositional logic in negation normal form to conjunctive normal form 
+cnf :: Form -> Form
+cnf (Prop x) = (Prop x)
+cnf (Neg (Prop x)) = (Neg (Prop x))
+cnf (Dsj f)
+  | containsCnj f = Cnj (toCnjs (splitDsjs (map cnf f)))
+  | otherwise = Dsj (splitDsjs (map cnf f))
+cnf (Cnj f) = Cnj (splitCnjs (map cnf f))
+
+-- |whether a list of Forms contains a conjunctions
+containsCnj :: [Form] -> Bool
+containsCnj = any (\ x -> isCnj x)
+
+-- |whether a Form is a conjunction
+isCnj :: Form -> Bool
+isCnj (Cnj _) = True
+isCnj _ = False
+
+-- |whether a Form is a disjunction
+isDsj :: Form -> Bool
+isDsj (Dsj _) = True
+isDsj _ = False
+
+-- |split elements that are a conjunction into seperate elements in a list of Forms
+splitCnjs :: [Form] -> [Form]
+splitCnjs [] = []
+splitCnjs (x:xs)
+  | isCnj x = (splitCnj x) ++ (splitCnjs xs)
+  | otherwise = x:(splitCnjs xs)
+
+-- |get the list of elements a conjunction reaches over
+splitCnj :: Form -> [Form]
+splitCnj (Cnj f) = f
+
+-- |split elements that are a disjunction into seperate elements in a list of Forms
+splitDsjs :: [Form] -> [Form]
+splitDsjs [] = []
+splitDsjs (x:xs)
+  | isDsj x = (splitDsj x) ++ (splitDsjs xs)
+  | otherwise = x:(splitDsjs xs)
+
+-- |get the list of elements a disjunction reaches over
+splitDsj :: Form -> [Form]
+splitDsj (Dsj f) = f
+
+toCnjs :: [Form] -> [Form]
+toCnjs = error "To do" --To do
