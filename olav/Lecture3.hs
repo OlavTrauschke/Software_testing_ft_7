@@ -1,10 +1,13 @@
-module Lecture3
+﻿module Lecture3
 
 where
 
 import Data.List
 import Data.Char
 import Test.QuickCheck
+
+(.) :: (a -> b) -> (c -> a) -> (c -> b)
+f . g = \ x -> f (g x)
 
 infixl 2 #
 (#) :: (a -> b) -> (b -> c) -> (a -> c)
