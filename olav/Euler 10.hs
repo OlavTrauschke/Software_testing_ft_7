@@ -1,5 +1,6 @@
 import Prelude
 
+--Executing this results is 142913828922
 sumPrimesLTTwoMillion :: Integer
 sumPrimesLTTwoMillion = sum (takeWhile (<2000000) primes)
 
