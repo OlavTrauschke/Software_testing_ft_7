@@ -1,10 +1,5 @@
 import Lecture3
 
--- Test vars
-p = Prop 1
-q = Prop 2
-r = Prop 3
-
 -- Exercise 1 (40 mins)
 contradiction :: Form -> Bool
 contradiction f = not $ any (\ v -> evl v f) (allVals f)
@@ -45,3 +40,15 @@ parseCases :: [String]
 parseCases = ["*(1 +(2 -3))", "(1<=>2)"] -- etc
 testParser = all (\ s -> let r = parse s in
                          (length r == 1) && (show (head r) == s)) parseCases
+
+-- Ex 3: formula to CNF
+toCnf f
+    | tautology f = let p = Prop (head $ propNames f) in Cnj [Dsj [p, Neg p]]
+    | otherwise   = Cnj (map (\ p -> Dsj (map (\ (p', v) -> if v then (Neg (Prop p')) else (Prop p')) p)) (filter (\ p -> evl p f == False ) (allVals f)) )
+
+-- Ex 4: TBD
+
+-- Ex 5:
+type Clause  = [Int]
+type Clauses = [Clause]
+cnf2cls :: Form -> Clauses
