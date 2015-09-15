@@ -350,10 +350,21 @@ toDsjs (x:xs) = (Dsj x):(toDsjs xs)
 type Clause = [Int]
 type Clauses = [Clause]
 
--- |convert a Form in cnf to Clauses
-cnf2cls :: Form -> Clauses
-cnf2cls = error "To do"
-
 -- |convert any Form to Clauses
 form2cls :: Form -> Clauses
 form2cls = cnf2cls.toCnf
+
+-- |convert a Form in cnf to Clauses
+cnf2cls :: Form -> Clauses
+cnf2cls (Cnj x) = map toClause x
+cnf2cls _ = error "No cnf"
+
+-- |convert a dsj or a literal to a clause
+toClause :: Form -> Clause
+toClause (Dsj x) = map toInt x
+toClause x = [(toInt x)]
+
+-- |convert a literal (wrapped in a form) to an int
+toInt :: Form -> Int
+toInt (Prop x) = x
+toInt (Neg (Prop x)) = -x
