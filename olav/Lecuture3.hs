@@ -249,12 +249,14 @@ nnf (Neg (Dsj fs)) = Cnj (map (nnf.Neg) fs)
 
 --Exercise 1 below. We spent about an hour on this exercise
 
+-- |whether a logical formula is a contradiction
 {-Tested by verifying that
 contradiction (Cnj [(Prop 1),(Neg (Prop 1))]) is true,
 contradiction (Dsj [(Prop 1),(Neg (Prop 1))]) is false-}
 contradiction :: Form -> Bool
 contradiction = not.satisfiable
 
+-- |whether a logical formula is a tautology
 --The function below was based strongly on satisfiable
 {-Tested by verifying that
 tautology (Dsj [(Prop 1),(Neg (Prop 1))]) is true,
@@ -343,5 +345,20 @@ splitDsjs (x:xs)
 splitDsj :: Form -> [Form]
 splitDsj (Dsj f) = f
 
+-- |get a list of Forms that should be written conjunctively from a list of Froms that should be written disjunctively
+{-the use of sequence in this function was inspired by the response of newacct posted on Nov 7 '10, edited by
+JB on Feb 10 '11 as found on September 15 '15 at http://stackoverflow.com/questions/4119730/cartesian-product-}
 toCnjs :: [Form] -> [Form]
-toCnjs = error "To do" --To do
+toCnjs = toDsjs.sequence.toListsOfElementsOfConjunctions
+
+-- |get lists of all elements of conjunctions in a list of conjunctions and literals
+toListsOfElementsOfConjunctions :: [Form] -> [[Form]]
+toListsOfElementsOfConjunctions [] = []
+toListsOfElementsOfConjunctions ((Prop x):xs) = [(Prop x)]:(toListsOfElementsOfConjunctions xs)
+toListsOfElementsOfConjunctions ((Neg (Prop x)):xs) = [(Neg (Prop x))]:(toListsOfElementsOfConjunctions xs)
+toListsOfElementsOfConjunctions ((Cnj x):xs) = x:toListsOfElementsOfConjunctions xs
+
+-- |convert a list of lists of which the elements repersent disjunct elements into a list of disjunctions
+toDsjs :: [[Form]] -> [Form]
+toDsjs [] = []
+toDsjs (x:xs) = (Dsj x):(toDsjs xs)
