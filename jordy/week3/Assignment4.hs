@@ -12,7 +12,4 @@ import Test.QuickCheck
 import Control.Applicative
 import Control.Monad
 
-test = quickCheckWith stdArgs { maxSize = 15 } prop_Cnf
-verboseTest = verboseCheckWith stdArgs { maxSize = 15 } prop_Cnf
-
 prop_Cnf f = equiv f (toCnf f)

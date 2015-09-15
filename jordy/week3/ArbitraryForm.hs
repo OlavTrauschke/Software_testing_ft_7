@@ -20,3 +20,7 @@ arbForm n = frequency
     , (2, liftM2 Equiv (subForm)
                      (subForm)) ]
     where subForm = arbForm (n `div` 2)
+
+check, vCheck :: Testable prop => prop -> IO ()
+check = quickCheckWith stdArgs { maxSize = 15 } -- quickCheck
+vCheck = verboseCheckWith stdArgs { maxSize = 15 } -- verboseCheck
