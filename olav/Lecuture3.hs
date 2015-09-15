@@ -293,8 +293,7 @@ Furthermore, we tested by verifying that a longer formula, combining implication
 equivalence, disjunction (which could as well have been conjunction obviously) and negation
 parsed right: parse "((1 ==> 2) <=> + (2 -1))" is printed as [((1==>2)<=>+(2 -1))]-}
 
---Exercise 3 below.
---Spent an hour on 14-9
+--Exercise 3 below. We spent about 2,5 hours on this exercise.
 
 -- |convert a formula of propositional logic to conjunctive normal form
 toCnf :: Form -> Form
