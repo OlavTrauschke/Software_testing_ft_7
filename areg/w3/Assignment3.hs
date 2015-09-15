@@ -8,24 +8,37 @@ module Assignment3 where
 import Data.List
 import System.Random
 import Lecture3
+import Assignment1
+
+-- Push disjunctions downward
+-- (A & B) | C  =>  (A | C) & (B | C)
+dsj_push :: Form -> Form 
+dsj_push (Dsj [Cnj [a, b], c]) = Cnj [dsj_push (Dsj [a, c]), dsj_push (Dsj [b, c])]
+dsj_push (Dsj [a, Cnj [b, c]]) = Cnj [dsj_push (Dsj [a, b]), dsj_push (Dsj [a, c])]
+dsj_push (Cnj [a, b]) = Cnj [dsj_push a, dsj_push b] 
+dsj_push (Dsj [a, b]) = Dsj [dsj_push a, dsj_push b]
+dsj_push a = a
+
+loop_dsj_push :: Form -> Form
+loop_dsj_push f
+	| f2 == f	= f
+	| otherwise	= loop_dsj_push f2
+	where f2 = dsj_push f
+
+
+toCnf :: Form -> Form
+toCnf f = loop_dsj_push . nnf . arrowfree $ f
 
 
 
--- nnf.arrowfree
--- Dsj [Dsj [Cnj [p, Neg q], Cnj [q, Neg r]] , Dsj [Neg p, r]]
-
-
--- Cnj [Dsj [p, q, Neg p, r], Dsj [p, Neg r, Neg p, r], Dsj [Neg q, q, Neg p, r], Dsj [Neg q, Neg r, Neg p, r]]
 
 
 
-cnf :: Form -> Form 
-cnf (Dsj [Cnj [a, b], c]) = Cnj [cnf (Dsj [a, c]), cnf (Dsj [b, c])]
-cnf (Dsj [a, Cnj [b, c]]) = Cnj [cnf (Dsj [a, b]), cnf (Dsj [a, c])]
 
-cnf (Cnj [a, b]) = Cnj [cnf a, cnf b]
-cnf (Dsj [a, b]) = Dsj [cnf a, cnf b]
-cnf a = a
+
+
+
+
 
 
 
