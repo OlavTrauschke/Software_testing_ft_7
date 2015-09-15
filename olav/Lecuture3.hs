@@ -346,7 +346,7 @@ toDsjs :: [[Form]] -> [Form]
 toDsjs [] = []
 toDsjs (x:xs) = (Dsj x):(toDsjs xs)
 
---Exercise 5 below. We spent about ... hours on this exercise.
+--Exercise 5 below. We spent about two hours on this exercise.
 type Clause = [Int]
 type Clauses = [Clause]
 
