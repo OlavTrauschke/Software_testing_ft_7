@@ -304,45 +304,29 @@ cnf :: Form -> Form
 cnf (Prop x) = (Prop x)
 cnf (Neg (Prop x)) = (Neg (Prop x))
 cnf (Dsj f)
-  | containsCnj f = Cnj (toCnjs (splitDsjs (map cnf f)))
-  | otherwise = Dsj (splitDsjs (map cnf f))
-cnf (Cnj f) = Cnj (splitCnjs (map cnf f))
-
--- |whether a list of Forms contains a conjunctions
-containsCnj :: [Form] -> Bool
-containsCnj = any (\ x -> isCnj x)
+  | any (\ x -> isCnj x) f = Cnj (toCnjs (split (splitDsj) (map cnf f)))
+  | otherwise = Dsj (split (splitDsj) (map cnf f))
+cnf (Cnj f) = Cnj (split (splitCnj) (map cnf f))
 
 -- |whether a Form is a conjunction
 isCnj :: Form -> Bool
 isCnj (Cnj _) = True
 isCnj _ = False
 
--- |whether a Form is a disjunction
-isDsj :: Form -> Bool
-isDsj (Dsj _) = True
-isDsj _ = False
+-- |split elements in a list of Forms using a provided split function
+split :: (Form -> [Form]) -> [Form] -> [Form]
+split _ [] = []
+split f (x:xs) = (f x) ++ (split f xs)
 
--- |split elements that are a conjunction into seperate elements in a list of Forms
-splitCnjs :: [Form] -> [Form]
-splitCnjs [] = []
-splitCnjs (x:xs)
-  | isCnj x = (splitCnj x) ++ (splitCnjs xs)
-  | otherwise = x:(splitCnjs xs)
-
--- |get the list of elements a conjunction reaches over
+-- |get the list of elements a conjunction reaches over. Does nothing with formulas which aren't cnjs
 splitCnj :: Form -> [Form]
 splitCnj (Cnj f) = f
+splitCnj x = [x]
 
--- |split elements that are a disjunction into seperate elements in a list of Forms
-splitDsjs :: [Form] -> [Form]
-splitDsjs [] = []
-splitDsjs (x:xs)
-  | isDsj x = (splitDsj x) ++ (splitDsjs xs)
-  | otherwise = x:(splitDsjs xs)
-
--- |get the list of elements a disjunction reaches over
+-- |get the list of elements a disjunction reaches over. Does nothing with formulas which aren't dsjs
 splitDsj :: Form -> [Form]
 splitDsj (Dsj f) = f
+splitDsj x = [x]
 
 -- |get a list of Forms that should be written conjunctively from a list of Froms that should be written disjunctively
 {-the use of sequence in this function was inspired by the response of newacct posted on Nov 7 '10, edited by
@@ -361,3 +345,15 @@ toListsOfElementsOfConjunctions ((Cnj x):xs) = x:toListsOfElementsOfConjunctions
 toDsjs :: [[Form]] -> [Form]
 toDsjs [] = []
 toDsjs (x:xs) = (Dsj x):(toDsjs xs)
+
+--Exercise 5 below. We spent about ... hours on this exercise.
+type Clause = [Int]
+type Clauses = [Clause]
+
+-- |convert a Form in cnf to Clauses
+cnf2cls :: Form -> Clauses
+cnf2cls = error "To do"
+
+-- |convert any Form to Clauses
+form2cls :: Form -> Clauses
+form2cls = cnf2cls.toCnf
