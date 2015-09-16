@@ -2,14 +2,8 @@ module Assignment3
 
 where
 
-
-import Data.List
-import System.Random
 import Lecture3
 import Assignment1
-import Test.QuickCheck
-import Control.Applicative
-import Control.Monad
 
 
 toCnf :: Form -> Form

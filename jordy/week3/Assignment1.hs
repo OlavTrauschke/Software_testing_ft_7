@@ -2,8 +2,6 @@ module Assignment1
 
 where
 
-import Data.List
-import System.Random
 import Lecture3
 
 contradiction :: Form -> Bool
