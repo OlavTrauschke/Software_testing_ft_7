@@ -32,7 +32,7 @@ isInCnf _ = False
 {-
  - 
  - Our test method uses QuickCheck. The arbitrary implementation can be found in ArbitraryForm.hs
- - The first test checks if the CNF of the formula is equivalent to the original formula. (Usage "check $ prop_CnfEquiv [toCnf | toCnfLazy]")
- - The second test checks if the form of the CNF. (Usage "check $ prop_CnfDef [toCnf | toCnfLazy]")
+ - The first test checks if the CNF of the formula is equivalent to the original formula. (Usage "check $ prop_CnfEquiv toCnfLazy")
+ - The second test checks if the form of the CNF. (Usage "check $ prop_CnfDef toCnfLazy")
  -
  -}
