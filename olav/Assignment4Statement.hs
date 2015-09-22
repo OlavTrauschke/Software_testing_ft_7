@@ -7,8 +7,8 @@ import Lecture4
 
 instance Show Statement where
   show (Ass v e) =    (show v) ++ " <- " ++ (show e)
-  show (Cond c i e) = "if " ++ (show c) ++ "\n  then" ++ (indent 4 ('\n':show i))
-                        ++ "\n  else" ++ (indent 4 ('\n':show e))
+  show (Cond c i e) = "if " ++ (show c) ++ (indent 2 ('\n':show i))
+                        ++ "\nelse" ++ (indent 2 ('\n':show e))
   show (Seq []) =     ""
   show (Seq x) =      (intercalate ";\n" (map show x)) ++ ";"
   show (While c s) = "while " ++ (show c) ++ (indent 2 ('\n':(show s)))
@@ -22,3 +22,12 @@ indent x (c:cs)
 spaces :: Int -> String
 spaces 0 = ""
 spaces x = " " ++ spaces (x-1)
+
+instance Show Condition where
+  show (Prp v) =    show v
+  show (Eq e1 e2) = (show e1) ++ " == " ++ (show e2)
+  show (Lt e1 e2) = (show e1) ++ " < " ++ (show e2)
+  show (Gt e1 e2) = (show e1) ++ ">" ++ (show e2)
+  show (Ng c) =     "!(" ++ (show c) ++ ")"
+  show (Cj c) =     intercalate "  & " (map show c)
+  show (Dj c) =     intercalate "  | " (map show c)
