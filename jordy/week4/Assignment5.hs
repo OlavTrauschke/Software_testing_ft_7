@@ -1,11 +1,10 @@
-module Assignment5
+module Assignment4
 
 where
 
 import Rel
 import Data.List
-import Lecture4
 
-trClos :: Ord a => Rel a -> Rel a
-trClos = fp trStep
-    where trStep r = sort $ nub $ r ++ (r @@ r)
+symClos :: Ord a => Rel a -> Rel a
+symClos [] = []
+symClos ((a,b):xs) = sort $ nub $ (a,b):(b,a):(symClos xs)
