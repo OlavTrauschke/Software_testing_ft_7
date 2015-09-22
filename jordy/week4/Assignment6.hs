@@ -1,4 +1,4 @@
-module Assignment5
+module Assignment6
 
 where
 
@@ -7,5 +7,4 @@ import Data.List
 import Lecture4
 
 trClos :: Ord a => Rel a -> Rel a
-trClos = fp trStep
-    where trStep r = sort $ nub $ r ++ (r @@ r)
+trClos r = fp (\r -> sort $ union r (r @@ r)) r

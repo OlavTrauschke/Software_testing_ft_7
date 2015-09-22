@@ -1,4 +1,4 @@
-module Assignment5
+module Assignment4
 
 where
 
