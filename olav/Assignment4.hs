@@ -68,14 +68,14 @@ differenceSet (Set (x:xs)) (Set y)
   | otherwise = insertSet x (differenceSet (Set xs) (Set y))
 
 {-Own implementation of testing.
-Usage: testManually [numberOfCases] [prop_union|prop_intersect|prop_difference]-}
+Usage: testSetsManually [numberOfCases] [prop_union|prop_intersect|prop_difference]-}
 
-testManually :: Int -> (Set Int -> Set Int -> Bool) -> IO Bool
-testManually 0 _ = return True
-testManually n p = do
+testSetsManually :: Int -> (Set Int -> Set Int -> Bool) -> IO Bool
+testSetsManually 0 _ = return True
+testSetsManually n p = do
   set1 <- randomIntSet
   set2 <- randomIntSet
-  liftM2 (&&) (testManually (n-1) p)
+  liftM2 (&&) (testSetsManually (n-1) p)
     (liftM2 p (return set1) (return set2))
 
 --Test properties below
@@ -135,16 +135,26 @@ r @@ s =
   nub [ (x,z) | (x,y) <- r, (w,z) <- s, y == w ]
 
 trClos :: Ord a => Rel a -> Rel a
-trClos x = union (fixpoint (@@) x x) x
+trClos x = fp (\y -> sort (union (y @@ y) y)) x
+
+--The operator below was defined in the assignment at
+--http://homepages.cwi.nl/~jve/courses/15/testing/lab/Lab4.html
+fp :: Eq a => (a -> a) -> a -> a 
+fp f = until (\ x -> x == f x) f
+
 
 fixpoint :: Eq a => (a -> a -> a) -> a -> a -> a
 fixpoint f x y
   | y == f x y = y
   | otherwise = fixpoint f y (f x y)
 
---Exercise 7 below. We spent about ... on this exercise.
+--Exercise 7 below. We spent about 2 hours on this exercise.
 
 {--}
+
+--Functions for generating random relations of Ints
+instance Arbitrary (Rel Int) where
+  arbitrary = liftM nub $ listOf $ (liftM2 (,) (choose (1,10)) (choose (1,10))) 
 
 randomIntRel :: IO (Rel Int)
 randomIntRel = do
@@ -164,3 +174,40 @@ randomIntPair = do
   x <- randomInt 0 10
   y <- randomInt 0 10
   return (x,y)
+
+{-Own implementation of testing. Usage: testSetsManually [numberOfCases]
+[prop_symClosSymmetric|prop_symClosComplete|prop_trClosTransitive
+|prop_trClosComplete]-}
+testRelationsManually :: Int -> ((Rel Int) -> Bool) -> IO Bool
+testRelationsManually 0 _ = return True
+testRelationsManually n p = do
+  rel <- randomIntRel
+  liftM2 (&&) (testRelationsManually (n-1) p) (return (p rel))
+
+prop_symClosSymmetric :: (Rel Int) -> Bool
+prop_symClosSymmetric rel = isSymmetric (symClos rel)
+
+isSymmetric :: Eq a => (Rel a) -> Bool
+isSymmetric [] = True
+isSymmetric ((x,y):zs)
+  | x==y = isSymmetric zs
+  | otherwise = elem (y,x) zs && isSymmetric (delete (y,x) zs)
+
+prop_symClosComplete :: (Rel Int) -> Bool
+prop_symClosComplete rel = all (\x -> elem x y) rel
+  where y = symClos rel
+
+prop_trClosTransitive :: (Rel Int) -> Bool
+prop_trClosTransitive rel = isTransitive (trClos rel)
+
+isTransitive :: (Rel Int) -> Bool
+isTransitive = isTransitive' []
+
+isTransitive' :: (Rel Int) -> (Rel Int) -> Bool
+isTransitive' _ [] = True
+isTransitive' done ((x,y):zs) = (all (\(v,w) -> elem (x,w) ((x,y):(union zs done)))
+  (filter (\(v,w) -> v==y) (union zs done))) && isTransitive' ((x,y):done) zs
+
+prop_trClosComplete :: (Rel Int) -> Bool
+prop_trClosComplete rel = all (\x -> elem x y) rel
+  where y = trClos rel
