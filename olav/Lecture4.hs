@@ -49,7 +49,7 @@ data Condition = Prp Var
                | Ng Condition
                | Cj [Condition] 
                | Dj [Condition]
-               deriving (Eq,Show)
+               deriving (Eq)
 
 data Statement = Ass Var Expr
                | Cond Condition Statement Statement
