@@ -16,29 +16,25 @@ to make all the exercises. I have no questions about this chapter.-}
 --Exercise 2. We spent about two hours on this exercise.
 
 randomIntSet :: IO (Set Int)
-randomIntSet = fmap list2set genIntList
+randomIntSet = fmap list2set (genIntList 100 (-100) 100)
 
 --The below random functions are based on Lecture 2 found at
 --http://homepages.cwi.nl/~jve/courses/15/testing/lectures/Lecture2.html
-genIntList :: IO [Int]
-genIntList = do 
-  n <- randomPositiveInt
-  getIntL n
+genIntList :: Int -> Int -> Int -> IO [Int]
+genIntList maxElements minValue maxValue = do 
+  n <- randomInt 0 maxElements
+  getIntL n minValue maxValue
 
-getIntL :: Int -> IO [Int]
-getIntL 0 = return []
-getIntL n = do 
-  x <- randomInt
-  xs <- getIntL (n-1)
+getIntL :: Int -> Int -> Int -> IO [Int]
+getIntL 0 _ _ = return []
+getIntL n min max = do 
+  x <- (randomInt min max)
+  xs <- getIntL (n-1) min max
   return (x:xs)
 
---Get a random Int between -100 and 100
-randomInt :: IO Int
-randomInt = getStdRandom (randomR (-100,100))
-
---Get a random Int between 0 and 100
-randomPositiveInt :: IO Int
-randomPositiveInt = getStdRandom (randomR (0,100))
+--Get a random Int between two bounds
+randomInt :: Int -> Int -> IO Int
+randomInt min max = getStdRandom (randomR (min,max))
 
 instance Arbitrary (Set Int) where
   arbitrary = arbSetInt
@@ -118,3 +114,53 @@ to make all the exercises. I have one questions about this chapter and that is
 why a pre_order is called an order and how this relates to the other types of
 orders presented in te book.-}
 
+--Exercise 5 below. We spent about 10 minutes on this exercise
+
+type Rel a = [(a,a)]
+
+symClos :: Ord a => Rel a -> Rel a
+symClos [] = []
+symClos ((x,y):zs)
+  | x==y = (x,y):(symClos zs)
+  | otherwise = (x,y):(y,x):(symClos (delete (y,x) zs))
+
+--Exercise 6 below. We spent about half an hour on this exercise
+
+--The operator below was defined in the assignment at
+--http://homepages.cwi.nl/~jve/courses/15/testing/lab/Lab4.html
+infixr 5 @@
+
+(@@) :: Eq a => Rel a -> Rel a -> Rel a
+r @@ s = 
+  nub [ (x,z) | (x,y) <- r, (w,z) <- s, y == w ]
+
+trClos :: Ord a => Rel a -> Rel a
+trClos x = union (fixpoint (@@) x x) x
+
+fixpoint :: Eq a => (a -> a -> a) -> a -> a -> a
+fixpoint f x y
+  | y == f x y = y
+  | otherwise = fixpoint f y (f x y)
+
+--Exercise 7 below. We spent about ... on this exercise.
+
+{--}
+
+randomIntRel :: IO (Rel Int)
+randomIntRel = do
+  n <- randomInt 0 100
+  result <- randomIntRel' n
+  return (nub result)
+
+randomIntRel' :: Int -> IO (Rel Int)
+randomIntRel' 0 = return []
+randomIntRel' n = do
+  pair <- randomIntPair
+  furtherValues <- randomIntRel' (n-1)
+  return (pair:furtherValues)
+
+randomIntPair :: IO (Int,Int)
+randomIntPair = do
+  x <- randomInt 0 10
+  y <- randomInt 0 10
+  return (x,y)
