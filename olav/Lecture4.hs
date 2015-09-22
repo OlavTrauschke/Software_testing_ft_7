@@ -55,7 +55,7 @@ data Statement = Ass Var Expr
                | Cond Condition Statement Statement
                | Seq [Statement]
                | While Condition Statement
-               deriving (Eq,Show)
+               deriving (Eq)
 
 evalc :: Env -> Condition -> Bool
 evalc env (Prp v)    = env v /= 0
