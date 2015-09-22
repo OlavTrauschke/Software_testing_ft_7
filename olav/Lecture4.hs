@@ -24,7 +24,7 @@ data Expr = I Integer | V Var
           | Add Expr Expr
           | Subtr Expr Expr
           | Mult Expr Expr
-          deriving (Eq,Show)
+          deriving (Eq)
 
 eval :: Env -> Expr -> Integer
 eval _ (I i) = i
