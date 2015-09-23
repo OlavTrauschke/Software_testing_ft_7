@@ -38,16 +38,16 @@ instance Show Condition where
 instance Show Expr where
   show (I i) =         show i
   show (V v) =         v
-  show (Add e1 e2) =   (show e1) ++ " + " ++ (show e2)
-  show (Subtr e1 e2) = (show e1) ++ " - " ++ (show e2)
-  show (Mult e1 e2) =  (show e1) ++ " * " ++ (show e2)
+  show (Add e1 e2) =   "(" ++ (show e1) ++ " + " ++ (show e2) ++ ")"
+  show (Subtr e1 e2) = "(" ++ (show e1) ++ " - " ++ (show e2) ++ ")"
+  show (Mult e1 e2) =  "(" ++ (show e1) ++ " * " ++ (show e2) ++ ")"
 
-read :: String -> [Token]
-read = tokenize
+--read :: String -> Statement
+--read = parse.tokenize
 
 data Token = AssToken | EOSToken | IfToken | ElseToken | WhileToken | OBToken | CBToken
-           | EqToken | LTToken | GTToken | NgToken | CjToken | DjToken | IntToken Integer
-           | VToken String | AddToken | SubtrToken | MultToken
+           | OCBToken | CCBToken | EqToken | LTToken | GTToken | NgToken | CjToken
+           | DjToken | IntToken Integer | VToken String | AddToken | SubtrToken | MultToken
            deriving (Show)
 
 tokenize :: String -> [Token]
@@ -55,11 +55,13 @@ tokenize [] =                             []
 tokenize (' ':xs) =                       tokenize xs
 tokenize ('\n':xs) =                      tokenize xs
 tokenize (';':xs) =                       EOSToken:tokenize xs
-tokenize ('i':'f':blank:xs) =             IfToken:tokenize xs
-tokenize ('e':'l':'s':'e':blank:xs) =     ElseToken:tokenize xs
-tokenize ('w':'h':'i':'l':'e':blank:xs) = WhileToken:tokenize xs
-tokenize ('{':xs) =                       OBToken:tokenize xs
-tokenize ('}':xs) =                       CBToken:tokenize xs
+tokenize ('i':'f':' ':xs) =               IfToken:tokenize xs
+tokenize ('e':'l':'s':'e':' ':xs) =       ElseToken:tokenize xs
+tokenize ('w':'h':'i':'l':'e':' ':xs) =   WhileToken:tokenize xs
+tokenize ('(':xs) =                       OBToken:tokenize xs
+tokenize (')':xs) =                       CBToken:tokenize xs
+tokenize ('{':xs) =                       OCBToken:tokenize xs
+tokenize ('}':xs) =                       CCBToken:tokenize xs
 tokenize ('=':'=':xs) =                   EqToken:tokenize xs
 tokenize ('=':xs) =                       AssToken:tokenize xs
 tokenize ('<':xs) =                       LTToken:tokenize xs
@@ -95,3 +97,7 @@ stringToInteger :: String -> Integer
 stringToInteger [] = 0
 stringToInteger ('-':xs) = -(stringToInteger xs)
 stringToInteger (x:xs) = (toInteger ((digitToInt x))*10^(length xs))+(stringToInteger xs)
+
+--parse :: [Token] -> Statement
+--parse (AssToken:(VToken v):e:EOSToken) = Ass v (parse e)
+--parse
