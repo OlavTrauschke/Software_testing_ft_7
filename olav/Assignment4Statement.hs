@@ -214,6 +214,10 @@ prop_readInverseOfShow x = x == (read.show) x
 --aribtrary generators for using quickCheck to test read and show
 instance Arbitrary Statement where
   arbitrary = sized arbStatement
+  shrink (Ass v e) =      []
+  shrink (Cond c s1 s2) = s1:[s2]
+  shrink (Seq s) =        s
+  shrink (While c s) =    [s]
 
 arbStatement :: Int -> Gen Statement
 arbStatement 0 = liftM2 Ass  arbVar (arbExpr 0)
