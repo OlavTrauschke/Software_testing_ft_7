@@ -75,8 +75,9 @@ tokenize ('|':xs) =                       DjToken:tokenize xs
 tokenize ('+':xs) =                       AddToken:tokenize xs
 tokenize ('-':' ':xs) =                   SubtrToken:tokenize xs
 tokenize ('*':xs) =                       MultToken:tokenize xs
-tokenize ('-':xs) =                       IntToken (stringToInteger i):tokenize (xs\\i)
-  where i = '-':getNumbers xs
+tokenize ('-':xs) =                       IntToken (stringToInteger ('-':i))
+                                            :tokenize (xs\\i)
+  where i = getNumbers xs
 tokenize (x:xs)
   | isDigit x = let
                   i = getNumbers (x:xs)
@@ -147,6 +148,7 @@ parseCond :: [Token] -> Condition
 parseCond (VToken v:xs) = Prp v
 parseCond (NgToken:xs) = Ng (parseCond xs)
 parseCond (OBToken:xs)
+  | cOp == CBToken = parseCond o1
   | cOp == CjToken || cOp == DjToken = parseListCOp cOp (getConditionList cOp xs)
   | otherwise = let
                   o2 = getExpression (delete cOp (xs\\o1))
@@ -164,7 +166,8 @@ getCondition (OBToken:xs) = OBToken:getUntilMatching 0 OBToken CBToken xs
 --given token representing the operation that is connecting them
 getConditionList :: Token -> [Token] -> [Condition]
 getConditionList op (x:xs)
-  | op == x = getConditionList op xs
+  | x == op = getConditionList op xs
+  | x == CBToken = []
   | otherwise = let
                   c = getCondition (x:xs)
                 in parseCond c:getConditionList op ((x:xs)\\c)                 
@@ -181,12 +184,12 @@ parseCOp GTToken = Gt
 --get the smallest prefix of a list of Tokens that represents a complete statement
 getStatement :: [Token] -> [Token]
 getStatement (VToken v:AssToken:xs) = VToken v:AssToken:getUntil EOSToken xs
-getStatement (IfToken:xs) = IfToken:(((xs\\c)\\i)\\e)
+getStatement (IfToken:xs) = IfToken:c ++ i ++ e
   where c = getCondition xs
         i = getStatement (xs\\c)
         e = getStatement ((xs\\c)\\i)
 getStatement (OCBToken:xs) = OCBToken:getUntilMatching 0 OCBToken CCBToken xs
-getStatement (WhileToken:xs) = WhileToken:((xs\\c)\\s)
+getStatement (WhileToken:xs) = WhileToken:c ++ s
   where c = getCondition xs
         s = getStatement (xs\\c)
 
@@ -246,7 +249,7 @@ arbCondition n = oneof [liftM  Prp arbVar,
   where m = n - 1
 
 arbConditionList :: Int -> Gen [Condition]
-arbConditionList 0 = return []
+arbConditionList 0 = liftM2 (:) (arbCondition 0) (return [])
 arbConditionList n = liftM2 (:) (arbCondition m) (arbConditionList m)
   where m = n - 1
 
