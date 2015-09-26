@@ -160,7 +160,7 @@ parseCond (OBToken:xs)
 --get the smallest prefix of a list of Tokens that represent a complete condition
 getCondition :: [Token] -> [Token]
 getCondition (VToken v:xs) = [VToken v]
-getCondition (NgToken:xs) = NgToken:getCondition (delete NgToken xs)
+getCondition (NgToken:xs) = NgToken:getCondition xs
 getCondition (OBToken:xs) = OBToken:getUntilMatching 0 OBToken CBToken xs
 
 --get a list of conditions from a list of Tokens representing them seperated by a
