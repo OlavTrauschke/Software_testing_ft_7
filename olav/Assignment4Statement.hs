@@ -2,11 +2,13 @@ module Assignment4Statement
 
 where
 
+import Control.Monad
 import Data.Char
 import Data.List
 import Data.String
 import Lecture4
 import Prelude hiding (read)--Get rid of predifined read to implement it self
+import Test.QuickCheck
 
 instance Show Statement where
   show (Ass v e) =                v ++ " = " ++ show e ++ ";"
@@ -45,6 +47,7 @@ instance Show Expr where
 read :: String -> Statement
 read = parse.tokenize
 
+--lexical analysis
 data Token = AssToken | EOSToken | IfToken | ElseToken | WhileToken | OBToken | CBToken
            | OCBToken | CCBToken | EqToken | LTToken | GTToken | NgToken | CjToken
            | DjToken | IntToken Integer | VToken String | AddToken | SubtrToken | MultToken
@@ -98,6 +101,7 @@ stringToInteger [] = 0
 stringToInteger ('-':xs) = -stringToInteger xs
 stringToInteger (x:xs) = toInteger (digitToInt x*10^length xs)+stringToInteger xs
 
+--parsing
 parse :: [Token] -> Statement
 parse (VToken v:AssToken:xs) = Ass v (parseExpr e)
   where e = getExpression xs
@@ -123,11 +127,14 @@ parseOp AddToken = Add
 parseOp SubtrToken = Subtr
 parseOp MultToken = Mult
 
+--get the smallest prefix of a list of Tokens that represent a complete statement
 getExpression :: [Token] -> [Token]
 getExpression (IntToken i:xs) = [IntToken i]
 getExpression (VToken v:xs) = [VToken v]
 getExpression (OBToken:xs) = OBToken:getUntilMatching 0 OBToken CBToken xs
 
+--get the smallest prefix of a list of tokens containg n+1 more occurences of target
+--than of inverseTarget
 getUntilMatching :: Integer -> Token -> Token -> [Token] -> [Token]
 getUntilMatching n inverseTarget target (t:ts)
   | n == 0 && t == target = [t]
@@ -146,11 +153,14 @@ parseCond (OBToken:xs)
   where o1 = getExpression xs
         cOp = head (xs\\o1)
 
+--get the smallest prefix of a list of Tokens that represent a complete condition
 getCondition :: [Token] -> [Token]
 getCondition (VToken v:xs) = [VToken v]
 getCondition (NgToken:xs) = NgToken:getCondition (delete NgToken xs)
 getCondition (OBToken:xs) = OBToken:getUntilMatching 0 OBToken CBToken xs
 
+--get a list of conditions from a list of Tokens representing them seperated by a
+--given token representing the operation that is connecting them
 getConditionList :: Token -> [Token] -> [Condition]
 getConditionList op (x:xs)
   | op == x = getConditionList op xs
@@ -167,6 +177,7 @@ parseCOp EqToken = Eq
 parseCOp LTToken = Lt
 parseCOp GTToken = Gt
 
+--get the smallest prefix of a list of Tokens that represents a complete statement
 getStatement :: [Token] -> [Token]
 getStatement (VToken v:AssToken:xs) = VToken v:AssToken:getUntil EOSToken xs
 getStatement (IfToken:xs) = IfToken:(((xs\\c)\\i)\\e)
@@ -178,12 +189,69 @@ getStatement (WhileToken:xs) = WhileToken:((xs\\c)\\s)
   where c = getCondition xs
         s = getStatement (xs\\c)
 
+--get the smallest prefix of a list of Tokens ending with a given Token
 getUntil :: Token -> [Token] -> [Token]
 getUntil target (x:xs)
   | x == target = [x]
   | otherwise = x:getUntil target xs
 
+--convert a list of Tokens into the list of statements they represent
 toListOfStatements :: [Token] -> [Statement]
 toListOfStatements [] = []
 toListOfStatements x = parse s:toListOfStatements (x\\s)
   where s = getStatement x
+
+--property expressing that reading the result of showing a statement gives that statements,
+--for testing read and show using quickCheck
+prop_readInverseOfShow :: Statement -> Bool
+prop_readInverseOfShow x = x == (read.show) x
+
+--aribtrary generators for using quickCheck to test read and show
+instance Arbitrary Statement where
+  arbitrary = sized arbStatement
+
+arbStatement :: Int -> Gen Statement
+arbStatement 0 = liftM2 Ass  arbVar (arbExpr 0)
+arbStatement n = oneof [liftM2 Ass  arbVar (arbExpr m),
+                        liftM3 Cond (arbCondition m) (arbStatement m) (arbStatement m),
+                        liftM  Seq  (arbStatementList m),
+                        liftM2 While (arbCondition m) (arbStatement m)]
+  where m = n - 1
+
+arbStatementList :: Int -> Gen [Statement]
+arbStatementList 0 = return []
+arbStatementList n = liftM2 (:) (arbStatement m) (arbStatementList m)
+  where m = n - 1
+
+arbExpr :: Int -> Gen Expr
+arbExpr 0 = oneof [liftM I arbitrary,
+                   liftM V arbVar]
+arbExpr n = oneof [liftM  I     arbitrary,
+                   liftM  V     arbVar,
+                   liftM2 Add   (arbExpr m) (arbExpr m),
+                   liftM2 Subtr (arbExpr m) (arbExpr m),
+                   liftM2 Mult  (arbExpr m) (arbExpr m)]
+  where m = n - 1
+
+arbCondition :: Int -> Gen Condition
+arbCondition 0 = liftM Prp arbVar
+arbCondition n = oneof [liftM  Prp arbVar,
+                        liftM2 Eq  (arbExpr m) (arbExpr m),
+                        liftM2 Lt  (arbExpr m) (arbExpr m),
+                        liftM2 Gt  (arbExpr m) (arbExpr m),
+                        liftM  Ng  (arbCondition m),
+                        liftM  Cj  (arbConditionList m),
+                        liftM  Dj  (arbConditionList m)]
+  where m = n - 1
+
+arbConditionList :: Int -> Gen [Condition]
+arbConditionList 0 = return []
+arbConditionList n = liftM2 (:) (arbCondition m) (arbConditionList m)
+  where m = n - 1
+
+{-generator for arbitrary Variable names, based on Ganesh Sittampalam's at
+http://stackoverflow.com/questions/20934506
+/haskell-quickcheck-how-to-generate-only-printable-strings from Jan 5 '14 17:09, edited
+on Jan 6 '14 at 6:55 as found on Sep 26 '15-}
+arbVar :: Gen String
+arbVar = (listOf1.elements) (['a'..'z'] ++ ['A'..'Z'])
