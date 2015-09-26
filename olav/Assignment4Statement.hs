@@ -94,6 +94,7 @@ getNumbers (x:xs)
 getChars :: String -> String
 getChars [] = []
 getChars (' ':xs) = []
+getChars (';':xs) = []
 getChars (x:xs) = x:getChars xs
 
 stringToInteger :: String -> Integer
