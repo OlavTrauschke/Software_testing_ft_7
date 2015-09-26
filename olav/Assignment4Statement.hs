@@ -134,6 +134,7 @@ getExpression :: [Token] -> [Token]
 getExpression (IntToken i:xs) = [IntToken i]
 getExpression (VToken v:xs) = [VToken v]
 getExpression (OBToken:xs) = OBToken:getUntilMatching 0 OBToken CBToken xs
+getExpression (NgToken:xs) = NgToken:getExpression xs
 
 --get the smallest prefix of a list of tokens containg n+1 more occurences of target
 --than of inverseTarget
@@ -223,7 +224,7 @@ arbStatement n = oneof [liftM2 Ass  arbVar (arbExpr m),
   where m = n - 1
 
 arbStatementList :: Int -> Gen [Statement]
-arbStatementList 0 = return []
+arbStatementList 0 = liftM2 (:) (arbStatement 0) (return [])
 arbStatementList n = liftM2 (:) (arbStatement m) (arbStatementList m)
   where m = n - 1
 
@@ -249,7 +250,9 @@ arbCondition n = oneof [liftM  Prp arbVar,
   where m = n - 1
 
 arbConditionList :: Int -> Gen [Condition]
-arbConditionList 0 = liftM2 (:) (arbCondition 0) (return [])
+--No conjunctions or disjunctions of less than two elements are allowed, because they would
+--not be recognizable as conjunction or disjunction
+arbConditionList 0 = liftM2 (:) (arbCondition 0) (liftM2 (:) (arbCondition 0) (return []))
 arbConditionList n = liftM2 (:) (arbCondition m) (arbConditionList m)
   where m = n - 1
 
