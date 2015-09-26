@@ -184,10 +184,10 @@ parseCOp GTToken = Gt
 --get the smallest prefix of a list of Tokens that represents a complete statement
 getStatement :: [Token] -> [Token]
 getStatement (VToken v:AssToken:xs) = VToken v:AssToken:getUntil EOSToken xs
-getStatement (IfToken:xs) = IfToken:c ++ i ++ e
+getStatement (IfToken:xs) = IfToken:c ++ i ++ ElseToken:e
   where c = getCondition xs
         i = getStatement (xs\\c)
-        e = getStatement ((xs\\c)\\i)
+        e = getStatement (delete ElseToken ((xs\\c)\\i))
 getStatement (OCBToken:xs) = OCBToken:getUntilMatching 0 OCBToken CCBToken xs
 getStatement (WhileToken:xs) = WhileToken:c ++ s
   where c = getCondition xs
