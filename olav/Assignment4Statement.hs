@@ -10,6 +10,11 @@ import Lecture4
 import Prelude hiding (read)--Get rid of predifined read to implement it self
 import Test.QuickCheck
 
+{-We spent about twelve hours on implementing the functions below, including the tests. Most
+of this time was spent on implementing, writing an automated test method for and debugging
+read. After using quickCheck to debug the functions below, we ran
+"quickCheck prop_readInverseOfShow" succesfully five times in a row to test the functions.-}
+
 instance Show Statement where
   show (Ass v e) =                v ++ " = " ++ show e ++ ";"
   show (Cond c i e) =             "if " ++ show c ++ " " ++ show i ++ "\nelse" ++ " "
@@ -221,11 +226,17 @@ instance Arbitrary Statement where
 
 arbStatement :: Int -> Gen Statement
 arbStatement 0 = liftM2 Ass  arbVar (arbExpr 0)
-arbStatement n = oneof [liftM2 Ass  arbVar (arbExpr m),
-                        liftM3 Cond (arbCondition m) (arbStatement m) (arbStatement m),
-                        liftM  Seq  (arbStatementList m),
-                        liftM2 While (arbCondition m) (arbStatement m)]
-  where m = n - 1
+arbStatement n
+  --limit test size to avoid too much recursion to process within reasonable time
+  --this limit was chosen by taking the highest limit the computer we tested on could handle
+  --within time considered reasonable
+  | n > 18 = arbStatement 18
+  | otherwise =  let
+                   m = n -1
+                 in oneof [liftM2 Ass  arbVar (arbExpr m),
+                           liftM3 Cond (arbCondition m) (arbStatement m) (arbStatement m),
+                           liftM  Seq  (arbStatementList m),
+                           liftM2 While (arbCondition m) (arbStatement m)]
 
 arbStatementList :: Int -> Gen [Statement]
 arbStatementList 0 = liftM2 (:) (arbStatement 0) (return [])
@@ -265,4 +276,11 @@ http://stackoverflow.com/questions/20934506
 /haskell-quickcheck-how-to-generate-only-printable-strings from Jan 5 '14 17:09, edited
 on Jan 6 '14 at 6:55 as found on Sep 26 '15-}
 arbVar :: Gen String
-arbVar = (listOf1.elements) (['a'..'z'] ++ ['A'..'Z'])
+arbVar = do
+           s <- arbVar'
+           if not (elem s ["if","else","while"])
+             then return s
+           else arbVar
+
+arbVar' :: Gen String
+arbVar' = (listOf1.elements) (['a'..'z'] ++ ['A'..'Z'])
