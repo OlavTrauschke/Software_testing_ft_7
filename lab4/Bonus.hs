@@ -1,16 +1,14 @@
-module Assignment4Statement
-
-where
+module Lab4Bonus where
 
 import Control.Monad
 import Data.Char
 import Data.List
 import Data.String
 import Lecture4
-import Prelude hiding (read)--Get rid of predifined read to implement it self
+import Prelude hiding (read) --Get rid of predifined read to implement it self
 import Test.QuickCheck
 
-{-We spent about twelve hours on implementing the functions below, including the tests. Most
+{- We spent about twelve hours on implementing the functions below, including the tests. Most
 of this time was spent on implementing, writing an automated test method for and debugging
 read. After using quickCheck to debug the functions below, we ran
 "quickCheck prop_readInverseOfShow" succesfully five times in a row to test the functions.-}

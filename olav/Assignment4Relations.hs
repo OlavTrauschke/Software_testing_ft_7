@@ -11,7 +11,7 @@ import SetOrd hiding (unionSet) --we had to implement unionSet ourselves
 import System.Random
 import Test.QuickCheck
 
-{-I spent about fifteen minutes rereading chapter 4, of which I previously had
+{-I spent about fifteen minutes rereading chapter 5, of which I previously had
 to make all the exercises. I have one questions about this chapter and that is
 why a pre_order is called an order and how this relates to the other types of
 orders presented in te book.-}

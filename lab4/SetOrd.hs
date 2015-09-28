@@ -1,5 +1,5 @@
 module SetOrd (Set(..),emptySet,isEmpty,inSet,subSet,insertSet,
-               deleteSet,powerSet,takeSet,(!!!),list2set,unionSet) 
+               deleteSet,powerSet,takeSet,(!!!),list2set) 
 
 where
 
