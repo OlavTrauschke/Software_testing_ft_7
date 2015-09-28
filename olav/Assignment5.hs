@@ -160,12 +160,15 @@ prune (r,c,v) ((x,y,zs):rest)
   | c == y = (x,y,zs\\[v]) : prune (r,c,v) rest
   | sameblock (r,c) (x,y) = 
         (x,y,zs\\[v]) : prune (r,c,v) rest
-  | sameblockNRC (r,c) (x,y) =
+  | inBlockNRC (r,c) && sameblockNRC (r,c) (x,y) =
         (x,y,zs\\[v]) : prune (r,c,v) rest
   | otherwise = (x,y,zs) : prune (r,c,v) rest
 
 sameblock :: (Row,Column) -> (Row,Column) -> Bool
 sameblock (r,c) (x,y) = bl r == bl x && bl c == bl y
+
+inBlockNRC :: (Row,Column) -> Bool
+inBlockNRC (r,c) = (not.null) (blNRC r) || (not.null) (blNRC c)
 
 sameblockNRC :: (Row,Column) -> (Row,Column) -> Bool
 sameblockNRC (r,c) (x,y) = blNRC r == blNRC x && blNRC c == blNRC y
@@ -191,14 +194,6 @@ constraints s = sortBy length3rd
     [(r,c, freeAtPos s (r,c)) | 
                        (r,c) <- openPositions s ]
 
-data Tree a = T a [Tree a] deriving (Eq,Ord,Show)
-
-grow :: (node -> [node]) -> node -> Tree node 
-grow step seed = T seed (map (grow step) (step seed))
-
-count :: Tree a -> Int 
-count (T _ ts) = 1 + sum (map count ts)
-
 search :: (node -> [node]) 
        -> (node -> Bool) -> [node] -> [node]
 search children goal [] = []
@@ -223,7 +218,7 @@ solveShowNs = sequence . fmap showNode . solveNs
 exampleNRC :: Grid
 exampleNRC = [[0,0,0,3,0,0,0,0,0],
               [0,0,0,7,0,0,3,0,0],
-              [2,0,0,0,0,0,0,0,0],
+              [2,0,0,0,0,0,0,0,8],
               [0,0,6,0,0,5,0,0,0],
               [0,9,1,6,0,0,0,0,0],
               [3,0,0,0,7,1,2,0,0],
