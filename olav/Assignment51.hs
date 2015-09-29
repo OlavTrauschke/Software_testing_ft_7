@@ -15,7 +15,7 @@ as implemented in exampleNRC:
 +-------+-------+-------+
 -}
 
-module Assignment5
+module Assignment51
 
 where 
 
@@ -33,6 +33,9 @@ values    = [1..9]
 
 blocks :: [[Int]]
 blocks = [[1..3],[4..6],[7..9]]
+
+blocksNRC :: [[Int]]
+blocksNRC = [[2..4],[6..8]]
 
 showVal :: Value -> String
 showVal 0 = " "
@@ -82,9 +85,15 @@ showSudoku = showGrid . sud2grid
 bl :: Int -> [Int]
 bl x = concat $ filter (elem x) blocks
 
+blNRC :: Int -> [Int]
+blNRC x = concat $ filter (elem x) blocksNRC
+
 subGrid :: Sudoku -> (Row,Column) -> [Value]
 subGrid s (r,c) = 
   [ s (r',c') | r' <- bl r, c' <- bl c ]
+
+subGridNRC :: Sudoku -> (Row,Column) -> [Value]
+subGridNRC s (r,c) = [s (r',c') | r' <- blNRC r, c' <- blNRC c]
 
 freeInSeq :: [Value] -> [Value]
 freeInSeq seq = values \\ seq
@@ -125,6 +134,10 @@ subgridInjective :: Sudoku -> (Row,Column) -> Bool
 subgridInjective s (r,c) = injective vs where 
    vs = filter (/= 0) (subGrid s (r,c))
 
+subgridInjectiveNRC :: Sudoku -> (Row,Column) -> Bool
+subgridInjectiveNRC s (r,c) = injective vs where
+  vs = filter (/=0) (subGridNRC s (r,c))
+
 consistent :: Sudoku -> Bool
 consistent s = and $
                [ rowInjective s r |  r <- positions ]
@@ -136,13 +149,6 @@ consistent s = and $
                 ++
                [ subgridInjectiveNRC s (r,c) |
                     r <- [2,6], c <- [2,6]]
-
-subgridInjectiveNRC :: Sudoku -> (Row,Column) -> Bool
-subgridInjectiveNRC s (r,c) = injective vs where
-  vs = filter (/=0) (subGridNRC s (r,c))
-
-subGridNRC :: Sudoku -> (Row,Column) -> [Value]
-subGridNRC s (r,c) = [s (r',c') | r' <- blNRC r, c' <- blNRC c]
 
 extend :: Sudoku -> ((Row,Column),Value) -> Sudoku
 extend = update
@@ -189,12 +195,6 @@ inBlockNRC (r,c) = (not.null) (blNRC r) || (not.null) (blNRC c)
 
 sameblockNRC :: (Row,Column) -> (Row,Column) -> Bool
 sameblockNRC (r,c) (x,y) = blNRC r == blNRC x && blNRC c == blNRC y
-
-blNRC :: Int -> [Int]
-blNRC x = concat $ filter (elem x) blocksNRC
-
-blocksNRC :: [[Int]]
-blocksNRC = [[2..4],[6..8]]
 
 initNode :: Grid -> [Node]
 initNode gr = let s = grid2sud gr in 
