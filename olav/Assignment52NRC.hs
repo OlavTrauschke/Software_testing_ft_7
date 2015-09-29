@@ -1,9 +1,4 @@
-{-The refactored code below is easier to modify for 'NRC-sudoku's than the original code,
-because now no code has to change to add a constrnt, except for constrntsUnion,
-to which a union with new constrnts should be added. This modification was implemented in
-Assignment52NRC.hs-}
-
-module Assignment52
+module Assignment52NRC
 
 where 
 
@@ -22,6 +17,9 @@ values    = [1..9]
 
 blocks :: [[Int]]
 blocks = [[1..3],[4..6],[7..9]]
+
+blocksNRC :: [[Int]]
+blocksNRC = [[2..4],[6..8]]
 
 showVal :: Value -> String
 showVal 0 = " "
@@ -95,9 +93,11 @@ type Constrnt = [[Position]]
 rowConstrnt =    [[(r,c) | c <- values] | r <- values]
 columnConstrnt = [[(r,c) | r <- values] | c <- values]
 blockConstrnt =  [[(r,c) | r <- b1, c <- b2] | b1 <- blocks, b2 <- blocks]
+nrcConstrnt =    [[(r,c) | r <- b1, c <- b2] | b1 <- blocksNRC, b2 <- blocksNRC]
 
 constrntsUnion :: [[Position]]
 constrntsUnion = rowConstrnt `union` columnConstrnt `union` blockConstrnt
+                   `union` nrcConstrnt
 
 type Node = (Sudoku,[Constraint])
 
@@ -158,57 +158,14 @@ solveAndShow gr = solveShowNs (initNode gr)
 solveShowNs :: [Node] -> IO[()]
 solveShowNs = sequence . fmap showNode . solveNs
 
-example1 :: Grid
-example1 = [[5,3,0,0,7,0,0,0,0],
-            [6,0,0,1,9,5,0,0,0],
-            [0,9,8,0,0,0,0,6,0],
-            [8,0,0,0,6,0,0,0,3],
-            [4,0,0,8,0,3,0,0,1],
-            [7,0,0,0,2,0,0,0,6],
-            [0,6,0,0,0,0,2,8,0],
-            [0,0,0,4,1,9,0,0,5],
-            [0,0,0,0,8,0,0,7,9]]
-
-example2 :: Grid
-example2 = [[0,3,0,0,7,0,0,0,0],
-            [6,0,0,1,9,5,0,0,0],
-            [0,9,8,0,0,0,0,6,0],
-            [8,0,0,0,6,0,0,0,3],
-            [4,0,0,8,0,3,0,0,1],
-            [7,0,0,0,2,0,0,0,6],
-            [0,6,0,0,0,0,2,8,0],
-            [0,0,0,4,1,9,0,0,5],
-            [0,0,0,0,8,0,0,7,9]]
-
-example3 :: Grid
-example3 = [[1,0,0,0,3,0,5,0,4],
-            [0,0,0,0,0,0,0,0,3],
-            [0,0,2,0,0,5,0,9,8], 
-            [0,0,9,0,0,0,0,3,0],
-            [2,0,0,0,0,0,0,0,7],
-            [8,0,3,0,9,1,0,6,0],
-            [0,5,1,4,7,0,0,0,0],
-            [0,0,0,3,0,0,0,0,0],
-            [0,4,0,0,0,9,7,0,0]]
-
-example4 :: Grid
-example4 = [[1,2,3,4,5,6,7,8,9],
-            [2,0,0,0,0,0,0,0,0],
-            [3,0,0,0,0,0,0,0,0],
-            [4,0,0,0,0,0,0,0,0],
-            [5,0,0,0,0,0,0,0,0],
-            [6,0,0,0,0,0,0,0,0],
-            [7,0,0,0,0,0,0,0,0],
-            [8,0,0,0,0,0,0,0,0],
-            [9,0,0,0,0,0,0,0,0]]
-
-example5 :: Grid
-example5 = [[1,0,0,0,0,0,0,0,0],
-            [0,2,0,0,0,0,0,0,0],
-            [0,0,3,0,0,0,0,0,0],
-            [0,0,0,4,0,0,0,0,0],
-            [0,0,0,0,5,0,0,0,0],
-            [0,0,0,0,0,6,0,0,0],
-            [0,0,0,0,0,0,7,0,0],
-            [0,0,0,0,0,0,0,8,0],
-            [0,0,0,0,0,0,0,0,9]]
+--Example found in the Lecture, quoted from NRC Handelsblad, Nov 26, 2005
+exampleNRC :: Grid
+exampleNRC = [[0,0,0,3,0,0,0,0,0],
+              [0,0,0,7,0,0,3,0,0],
+              [2,0,0,0,0,0,0,0,8],
+              [0,0,6,0,0,5,0,0,0],
+              [0,9,1,6,0,0,0,0,0],
+              [3,0,0,0,7,1,2,0,0],
+              [0,0,0,0,0,0,0,3,1],
+              [0,8,0,0,4,0,0,0,0],
+              [0,0,2,0,0,0,0,0,0]]
