@@ -96,8 +96,7 @@ blockConstrnt =  [[(r,c) | r <- b1, c <- b2] | b1 <- blocks, b2 <- blocks]
 nrcConstrnt =    [[(r,c) | r <- b1, c <- b2] | b1 <- blocksNRC, b2 <- blocksNRC]
 
 constrntsUnion :: [[Position]]
-constrntsUnion = rowConstrnt `union` columnConstrnt `union` blockConstrnt
-                   `union` nrcConstrnt
+constrntsUnion = rowConstrnt ++ columnConstrnt ++ blockConstrnt ++ nrcConstrnt
 
 type Node = (Sudoku,[Constraint])
 

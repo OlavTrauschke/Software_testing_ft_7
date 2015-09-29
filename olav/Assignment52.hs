@@ -1,6 +1,6 @@
 {-The refactored code below is easier to modify for 'NRC-sudoku's than the original code,
 because now no code has to change to add a constrnt, except for constrntsUnion,
-to which a union with new constrnts should be added. This modification was implemented in
+to which a new constrnts should be appended. This modification was implemented in
 Assignment52NRC.hs
 
 We tested using the three consistent examples with a unique solution, example1,
@@ -115,7 +115,7 @@ columnConstrnt = [[(r,c) | r <- values] | c <- values]
 blockConstrnt =  [[(r,c) | r <- b1, c <- b2] | b1 <- blocks, b2 <- blocks]
 
 constrntsUnion :: [[Position]]
-constrntsUnion = rowConstrnt `union` columnConstrnt `union` blockConstrnt
+constrntsUnion = rowConstrnt ++ columnConstrnt ++ blockConstrnt
 
 type Node = (Sudoku,[Constraint])
 
