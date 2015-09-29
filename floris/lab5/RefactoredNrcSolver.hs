@@ -1,36 +1,21 @@
-module Lab5NrcSolver where 
+module Lab5RefactoredNrcSolver where 
 
   {- 
-    Turns out wrapping all calls isn't all that great. This is based
-    on Lecture5.hs, modified/new functions are annotated.
+    Refactored solver based on NrcSolver
     
     To run:       solveAndShow nrcProblem
-    Time spent:   90m
-    Solution:
-
-      +-------+-------+-------+
-      | 4 7 8 | 3 9 2 | 6 1 5 |
-      | 6 1 9 | 7 5 8 | 3 2 4 |
-      | 2 3 5 | 4 1 6 | 9 7 8 |
-      +-------+-------+-------+
-      | 7 2 6 | 8 3 5 | 1 4 9 |
-      | 8 9 1 | 6 2 4 | 7 5 3 |
-      | 3 5 4 | 9 7 1 | 2 8 6 |
-      +-------+-------+-------+
-      | 5 6 7 | 2 8 9 | 4 3 1 |
-      | 9 8 3 | 1 4 7 | 5 6 2 |
-      | 1 4 2 | 5 6 3 | 8 9 7 |
-      +-------+-------+-------+
-
   -}
 
   import Data.List
   import System.Random
 
-  type Row    = Int 
-  type Column = Int 
-  type Value  = Int
-  type Grid   = [[Value]]
+  type Row      = Int
+  type Column   = Int
+  type Value    = Int
+  type Grid     = [[Value]]
+
+  type Position = (Row,Column)
+  type Constrnt = [[Position]]
 
   positions, values :: [Int]
   positions = [1..9]
@@ -39,9 +24,30 @@ module Lab5NrcSolver where
   blocks :: [[Int]]
   blocks = [[1..3],[4..6],[7..9]]
 
-  -- We'll introduce a new subgrid in similar fashion to blocks
   blocksNrc :: [[Int]]
   blocksNrc = [[2..4],[6..8]]
+
+  -- We cant merge blocks with nrc blocks as they can co-exist
+  rowConstrnt     = [[(r,c)| c <- values ] | r <- values ]
+  columnConstrnt  = [[(r,c)| r <- values ] | c <- values ]
+  blockConstrnt   = [[(r,c)| r <- b1, c <- b2 ] | b1 <- blocks, b2 <- blocks ]
+  nrcConstrnt     = [[(r,c)| r <- b1, c <- b2 ] | b1 <- blocksNrc, b2 <- blocksNrc]
+
+  constraints' :: [Constrnt]
+  constraints' = [rowConstrnt,columnConstrnt,blockConstrnt,nrcConstrnt]
+
+  -- New free value generator, if no constraint then values
+  freeAtPos'' :: Sudoku -> Position -> Constrnt -> [Value]
+  freeAtPos'' s (r,c) xs
+    | vs == []   = values
+    | otherwise  = foldl1 intersect vs
+    where
+      ys = filter (elem (r,c)) xs
+      vs = (map ((values \\) . map s) ys)
+  
+  -- With all constraints.
+  freeAtPos' :: Sudoku -> Position -> [Constrnt] -> [Value]
+  freeAtPos' s (r,c) xs = foldl1 intersect (map (freeAtPos'' s (r,c) xs)
 
   showVal :: Value -> String
   showVal 0 = " "
