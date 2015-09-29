@@ -1,7 +1,25 @@
 {-The refactored code below is easier to modify for 'NRC-sudoku's than the original code,
 because now no code has to change to add a constrnt, except for constrntsUnion,
 to which a union with new constrnts should be added. This modification was implemented in
-Assignment52NRC.hs-}
+Assignment52NRC.hs
+
+We tested using the three consistent examples with a unique solution, example1,
+example2 and example3. We had these examples solved with WinGHCi set to display
+execution times, while no other programs while running (except for background
+processes obviously, which we assume did not use significantly different
+resources during the test).
+
+Using the implementation from the lecture, we got the following execution times:
+- example1: 0.03 secs
+- example2: 0.02 secs
+- example3: 0.09 secs
+Using the refactored implementation below, we got the following execution times:
+- example1: 0.05 secs
+- example2: 0.03 secs
+- example3: 0.34 secs
+
+It seems like the refactored implementation is less efficiënt than the one from
+the lecture, at least time-wise.-}
 
 module Assignment52
 
