@@ -1,0 +1,129 @@
+This week we'll answer in this report, as the source files are somewhat entangled.
+
+From exercise 2 on, most entry points require a Config datatype for which you can either use
+'nrc' for NRC puzzles or 'def' for default. They don't play along well.
+
+
+Exercise 1
+
+  First attempt to wrap all lecture code, wasn't a good call so this is a modified copy of Lecture5.hs
+
+  Source:       OldSolver.hs
+  To run:       solveAndShow nrcProblem
+  Time spent:   90m
+  Solution:
+
+    +-------+-------+-------+
+    | 4 7 8 | 3 9 2 | 6 1 5 |
+    | 6 1 9 | 7 5 8 | 3 2 4 |
+    | 2 3 5 | 4 1 6 | 9 7 8 |
+    +-------+-------+-------+
+    | 7 2 6 | 8 3 5 | 1 4 9 |
+    | 8 9 1 | 6 2 4 | 7 5 3 |
+    | 3 5 4 | 9 7 1 | 2 8 6 |
+    +-------+-------+-------+
+    | 5 6 7 | 2 8 9 | 4 3 1 |
+    | 9 8 3 | 1 4 7 | 5 6 2 |
+    | 1 4 2 | 5 6 3 | 8 9 7 |
+    +-------+-------+-------+
+
+
+Exercise 2
+
+  So, yeah, basically the NRC solver and default solver only differ in one aspect, which is
+  what constraints apply. Because we like dashed lines ours also differ on showGrid. What's 
+  baffling is that there seems to be no easy way to 'setup' a module with this information,
+  other than completely changing the flow with monads, which we simply couldn't do.
+
+  You could also have 1 module for the NRC solver and one for the default one, but when you add
+  the generators you'll end up with 50% more code, and you can't easily throw both problems at a
+  solver.
+
+  We don't know what good design of Haskell modules is, but supplying configuration seems to be
+  one of the topics widely acknowledged as tricky (https://www.joachim-breitner.de/blog/443-A_Solution_to_the_Configuration_Problem_in_Haskell). What we did was just pass along a datatype 
+  containing the constants and a print function, which adds an additional parameter to most functions.
+  
+  Source:       Solver.hs
+  To run:       solveAndShow nrc nrcExample
+                solveAndShow def example1
+                solveAndShow def example2 etc
+  Time spent:   1 hour initially
+                5 hours fighting ReaderT/generics/configuration
+                3 hour settling for the config drag along
+  Test report:
+
+    The refactored version of the solver is way easier to modify for new constraints. You only need to 
+    define a new constrnt, and add it to constrnts. The new program will take care of the rest. While 
+    with the first version, you had to edit four locations. Defining a new configuration is easy and
+    much more readable.
+
+    The new code also seems faster, by using ":set +s", haskell will time all functions. The difference
+    isn't spectacular, but on the NRC problem still 0.02 secs faster on average.
+
+
+Exercise 3
+
+  Source:       Generator.hs
+  To run:       prop_minimal def (head $ initNode def example1)
+                prop_minimal def (head $ initNode def example2) etc
+                prop_minimal nrc (head $ initNode nrc nrcExample)
+                test def 100 (prop_minimal def)
+  Time spent:   1 hour
+  Test report:
+
+    Example 1, 2 and the one from NRC are not minimal, example 3, and 5 are. Example 4 isn't consistent.
+
+    We also ran 100 tests on genRandomProblem which all passed with a modified tester from lecture 2.
+
+Exercise 4
+
+  As proven by Emrakul at http://puzzling.stackexchange.com/questions/309/
+  what-is-the-maximum-number-of-empty-3x3-blocks-a-proper-sudoku-can-have, Sudokus with four
+  empty blocks are possible, but it is impossible to have a sudoku with five empty blocks. Also important is that
+  we cannot simply remove any old box from the Sudoku, especially with 4.
+
+  With four boxes the only solution is to take a diagonal and either oposite corner, however we choose to 
+  just randomly pick a box until a satisfiable result popped up. Far from optimal but it'll get there.
+
+  Source:       Generator.hs
+  To run:       genEmptyBlocksProblem 1 >>= (showNode def)
+                genEmptyBlocksProblem 2 >>= (showNode def)
+                genEmptyBlocksProblem 3 >>= (showNode def)
+                genEmptyBlocksProblem 4 >>= (showNode def)
+  Time spent:   1,5 hour
+
+
+Exercise 5
+
+  The config bulk pays off..
+
+  Source:       Generator.hs
+  To run:       genRandomProblem nrc >>= (showNode nrc)
+  Time spent:   15m
+
+
+Exercise 6
+
+  To categorize a problem as simple or hard we'll not dive into the 20 or so techniques described by
+  Pelanek and instead label a puzzle if it is solvable with (a combination of) naked single
+  and hidden single steps. An additional factor could be number of clues given, with 17 being the hardest
+  and 80 easiest.. Numberphile had a video on this recently, kinda, https://www.youtube.com/watch?v=MlyTq-xVkQE
+
+  Onto solving, we need a solver which is limited in capability and can only perform naked single and hidden
+  single. Naked single is easily followed through the constraints function, which delivers a list of candidates
+  for each open field. If that list has length 1, it's a naked single. Hidden single is more complicated, as the
+  block or context would need to be analyzed and scanned for missing numbers. 
+
+  OR we could somehow add constraints to the constraint solver. I don't know how to translate them however.
+
+
+Exercise 7
+
+  Source:       Comparison.hs
+  To run:       bench nrc 20 0 0
+                bench def 20 0 0
+  Time spent:   10m
+  Test results:
+
+    Default:  n = 100, tot = 2426, avg = 24 hints
+    NRC:      STILL GOING STRONG
