@@ -194,12 +194,12 @@ primes decreases.-}
 
 --gives the smallest composite recognized as prime by prime_tests_F
 test_prime_tests_F_composites :: Int -> IO Integer
-test_prime_tests_F_composites k = test_prime_tests_F' k composites
+test_prime_tests_F_composites k = test_prime_test prime_tests_F k composites
 
-test_prime_tests_F' :: Int -> [Integer] -> IO Integer
-test_prime_tests_F' k (x:xs) = do
-  fail <- prime_tests_F k x
-  if fail then return x else test_prime_tests_F' k xs
+test_prime_test :: (Int -> Integer -> IO Bool) -> Int -> [Integer] -> IO Integer
+test_prime_test t k (x:xs) = do
+  fail <- t k x
+  if fail then return x else test_prime_test t k xs
 
 --Exercise 5
 
@@ -218,7 +218,7 @@ carmichael = [(6*k+1)*(12*k+1)*(18*k+1) |
   isPrime (18*k+1)]
 
 test_prime_tests_F_carmichael :: Int -> IO Integer
-test_prime_tests_F_carmichael k = test_prime_tests_F' k carmichael
+test_prime_tests_F_carmichael k = test_prime_test prime_tests_F k carmichael
 
 primeMR :: Int -> Integer -> IO Bool
 primeMR _ 2 = return True
@@ -236,6 +236,16 @@ primeMR k n = let
           if exM a s n /= 1 && last (f a) /= (n-1) 
             then return False
             else primeMR (k-1) n
+
+--Exercise 6 (the first one)
+
+{-Carmichal numbers seem to pass primeMR much less often than they pass prime_tests_F. On
+my first attempt the first Carmichael number passing primeMR with k=1 was 2301745249, the
+eight Carmichael number, and the first Carmichael number passing primeMR with k=2 was
+428549255564041, the 116th Carmhichael number.-}
+
+test_primeMR_carmichael :: Int -> IO Integer
+test_primeMR_carmichael k = test_prime_test primeMR k carmichael
 
 encodeDH :: Integer -> Integer -> Integer -> Integer
 encodeDH p k m = m*k `mod` p
