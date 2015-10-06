@@ -2,6 +2,7 @@ module Lecture6
 
 where 
 
+import Control.Monad
 import Data.List
 import System.Random
 import System.CPUTime
@@ -26,6 +27,13 @@ factors n = let
 
 isPrime n = factors n == [n]
 primes = 2 : filter isPrime [3..]
+
+--Exercise 3
+
+--Implemented after consulting Jordy for a simple solution because I was thinking of a much
+--too difficult solution.
+composites :: [Integer]
+composites = filter (not.isPrime) [4..]
 
 m1  = 2^2-1;    m2  = 2^3-1;     m3  = 2^5-1
 m4  = 2^7-1;    m5  = 2^13-1;    m6  = 2^17-1 
@@ -64,16 +72,44 @@ fct_gcd a b =
 expM ::  Integer -> Integer -> Integer -> Integer
 expM x y = rem (x^y)
 
---To check this function is faster than expM we ran "checkExecutionTime 100 []". This test
---gave that exM was faster in 69 of 100 cases.
+--Exercise 1
+
+--Tested using quickCheck prop_exMEqualsExpM, which passed all 100 tests five times in a row
 exM :: Integer -> Integer -> Integer -> Integer
 exM x y n = let
-    (exp,rem) = if y == 0 then (0,0) else decomp y
-  in exM' x (exp,rem) n
+    (exp,rem) = if y == 0 then (0,0) else splitPowersOfTwo y
+  in multM (exM' x exp n) (expM x rem n) n
 
-exM' :: Integer -> (Integer,Integer) -> Integer -> Integer
-exM' x (0,rem)   n = expM x rem n
-exM' x (exp,rem) n = expM (exM' x (exp-1,rem) n) 2 n
+exM' :: Integer -> Integer -> Integer -> Integer
+exM' _ 0   n = rem 1 n
+exM' 0 _   _ = 0
+exM' x 1   n = expM x 2 n
+exM' x exp n = exM' (expM x 2 n) (exp-1) n
+
+--Based on decomp, but getting the highest power of two out, no matter any remainder
+splitPowersOfTwo :: Integer -> (Integer,Integer)
+splitPowersOfTwo n = let
+    (l,m) = splitPowersOfTwo' (0,n)
+  in (log2 l,m)
+
+splitPowersOfTwo' (m,n)
+   | n < nextM - m = (m,n)
+   | otherwise = splitPowersOfTwo' (nextM,n-nextM+m)
+   where
+     nextM
+       | m == 0    = 2
+       | otherwise = 2*m
+
+--Integer logarithm with base 2.
+--Useful answers are only provided for powers of two with a positive exponent, otherwise 0.
+log2 :: Integer -> Integer
+log2 n 
+  | n == 0 = 0
+  | otherwise = (fst.log2') (0,n)
+  where
+    log2' (m,n)
+      | rem n 2 == 0 = log2' (m+1,div n 2)
+      | otherwise = (m,n)
 
 --Test property to test exM with QuickCheck using expM as reference
 prop_exMEqualsExpM :: Integer -> Integer -> Integer -> Bool
@@ -90,18 +126,21 @@ normalizeParams x y z
 uncurry3 :: (a -> b -> c -> d) -> (a,b,c) -> d
 uncurry3 f (x,y,z) = f x y z
 
---Speed comparison
+--Exercise 2
+
+--To check exM is faster than expM we ran "checkExecutionTime 100 []". This test gave that
+--exM was faster in 95 of 100 cases.
+
+--Compare execution times of exM and expM with specified input
 exMFasterThanExpM :: Integer -> Integer -> Integer -> IO Bool
 exMFasterThanExpM x y z
   | z == 0 = return True
   | otherwise = do
       startExM <- getCPUTime
-      exMResult <- return (exM x y z)
-      print exMResult --do something with the result to have it calculated
+      exMResult <- return $! (exM x y z)
       endExM <- getCPUTime
       startExpM <- getCPUTime
-      expMResult <- return (expM x y z)
-      print expMResult --do something with the result to have it calculated
+      expMResult <- return $! (expM x y z)
       endExpM <- getCPUTime
       return ((endExM - startExM) < (endExpM - startExpM))
 
