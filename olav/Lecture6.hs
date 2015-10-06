@@ -28,13 +28,6 @@ factors n = let
 isPrime n = factors n == [n]
 primes = 2 : filter isPrime [3..]
 
---Exercise 3
-
---Implemented after consulting Jordy for a simple solution because I was thinking of a much
---too difficult solution.
-composites :: [Integer]
-composites = filter (not.isPrime) [4..]
-
 m1  = 2^2-1;    m2  = 2^3-1;     m3  = 2^5-1
 m4  = 2^7-1;    m5  = 2^13-1;    m6  = 2^17-1 
 m7  = 2^19-1;   m8  = 2^31-1;    m9  = 2^61-1
@@ -74,17 +67,22 @@ expM x y = rem (x^y)
 
 --Exercise 1
 
---Tested using quickCheck prop_exMEqualsExpM, which passed all 100 tests five times in a row
+--Tested using quickCheck prop_exMEqualsExpM, which passed all 100 tests
 exM :: Integer -> Integer -> Integer -> Integer
-exM x y n = let
-    (exp,rem) = if y == 0 then (0,0) else splitPowersOfTwo y
-  in multM (exM' x exp n) (expM x rem n) n
+exM = exM' 1
 
-exM' :: Integer -> Integer -> Integer -> Integer
-exM' _ 0   n = rem 1 n
-exM' 0 _   _ = 0
-exM' x 1   n = expM x 2 n
-exM' x exp n = exM' (expM x 2 n) (exp-1) n
+exM' :: Integer -> Integer -> Integer -> Integer -> Integer
+exM' r _ 0 n = rem r n
+exM' r x 1 n = multM r x n
+exM' r x y n = let
+    (exp,rem) = if y == 0 then (0,0) else splitPowersOfTwo y
+    res = multM r (exM'' x exp n) n
+  in exM' res x rem n
+
+exM'' :: Integer -> Integer -> Integer -> Integer
+exM'' 0 _   _ = 0
+exM'' x 1   n = expM x 2 n
+exM'' x exp n = exM'' (expM x 2 n) (exp-1) n
 
 --Based on decomp, but getting the highest power of two out, no matter any remainder
 splitPowersOfTwo :: Integer -> (Integer,Integer)
@@ -145,6 +143,8 @@ exMFasterThanExpM x y z
       return ((endExM - startExM) < (endExpM - startExpM))
 
 --Compare execution times n times on random Integers
+--The second argument is for keeping the result and should be an empty list when calling
+--this function from another function
 checkExecutionTime :: Int -> [Bool] -> IO String
 checkExecutionTime 0 results = do
   testsRan <- (return.length) results
@@ -174,6 +174,19 @@ prime_tests_F :: Int -> Integer -> IO Bool
 prime_tests_F k n = do
   as <- sequence $ fmap (\_-> randomRIO (1,n-1)) [1..k]
   return (all (\ a -> exM a (n-1) n == 1) as)
+
+--Exercise 3
+
+--Implemented after consulting Jordy for a simple solution because I was thinking of a much
+--too difficult solution.
+composites :: [Integer]
+composites = filter (not.isPrime) [4..]
+
+--Exercise 4
+
+--gives the smallest composite recognized as prime by prime_tests_F
+--test_prime_tests_F :: Int -> IO Integer
+--test_prime_tests_F = do
 
 decomp :: Integer -> (Integer,Integer)
 decomp n = decomp' (0,n) where
