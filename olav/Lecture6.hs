@@ -184,9 +184,18 @@ composites = filter (not.isPrime) [4..]
 
 --Exercise 4
 
+{-test_prime_tests_F 1 gives 4, test_prime_tests_F 2 gives 1387, test_prime_tests_F 3 gives
+3277. If k is increased, the number of composites prime_tests_F recognizes as possible
+primes decreases.-}
+
 --gives the smallest composite recognized as prime by prime_tests_F
---test_prime_tests_F :: Int -> IO Integer
---test_prime_tests_F = do
+test_prime_tests_F :: Int -> IO Integer
+test_prime_tests_F k = test_prime_tests_F' k composites
+
+test_prime_tests_F' :: Int -> [Integer] -> IO Integer
+test_prime_tests_F' k (x:xs) = do
+  fail <- prime_tests_F k x
+  if fail then return x else test_prime_tests_F' k xs
 
 decomp :: Integer -> (Integer,Integer)
 decomp n = decomp' (0,n) where
