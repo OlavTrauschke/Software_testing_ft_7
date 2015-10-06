@@ -193,13 +193,32 @@ composites = filter (not.isPrime) [4..]
 primes decreases.-}
 
 --gives the smallest composite recognized as prime by prime_tests_F
-test_prime_tests_F :: Int -> IO Integer
-test_prime_tests_F k = test_prime_tests_F' k composites
+test_prime_tests_F_composites :: Int -> IO Integer
+test_prime_tests_F_composites k = test_prime_tests_F' k composites
 
 test_prime_tests_F' :: Int -> [Integer] -> IO Integer
 test_prime_tests_F' k (x:xs) = do
   fail <- prime_tests_F k x
   if fail then return x else test_prime_tests_F' k xs
+
+--Exercise 5
+
+{-Using test_prime_tests_F_carmichael, we found that the carmichael numbers, pass
+prime_tests_F very often, despite not being prime. This is because these numbers have the
+property Fermat's little theorem checks on to determine if a number can be a prime (despite)
+the fact they are not primes-}
+
+{-Carmichael numbers, as implemented in the assignment at
+http://homepages.cwi.nl/~jve/courses/15/testing/lab/Lab6.html-}
+carmichael :: [Integer]
+carmichael = [(6*k+1)*(12*k+1)*(18*k+1) |
+  k <- [2..],
+  isPrime (6*k+1),
+  isPrime (12*k+1),
+  isPrime (18*k+1)]
+
+test_prime_tests_F_carmichael :: Int -> IO Integer
+test_prime_tests_F_carmichael k = test_prime_tests_F' k carmichael
 
 primeMR :: Int -> Integer -> IO Bool
 primeMR _ 2 = return True
