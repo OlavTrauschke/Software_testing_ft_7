@@ -109,6 +109,10 @@ log2 n
       | rem n 2 == 0 = log2' (m+1,div n 2)
       | otherwise = (m,n)
 
+decomp :: Integer -> (Integer,Integer)
+decomp n = decomp' (0,n) where
+  decomp' = until (odd.snd) (\ (m,n) -> (m+1,div n 2))
+
 --Test property to test exM with QuickCheck using expM as reference
 prop_exMEqualsExpM :: Integer -> Integer -> Integer -> Bool
 prop_exMEqualsExpM x y z 
@@ -196,10 +200,6 @@ test_prime_tests_F' :: Int -> [Integer] -> IO Integer
 test_prime_tests_F' k (x:xs) = do
   fail <- prime_tests_F k x
   if fail then return x else test_prime_tests_F' k xs
-
-decomp :: Integer -> (Integer,Integer)
-decomp n = decomp' (0,n) where
-  decomp' = until (odd.snd) (\ (m,n) -> (m+1,div n 2))
 
 primeMR :: Int -> Integer -> IO Bool
 primeMR _ 2 = return True
