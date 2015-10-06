@@ -129,7 +129,7 @@ uncurry3 f (x,y,z) = f x y z
 --Exercise 2
 
 --To check exM is faster than expM we ran "checkExecutionTime 100 []". This test gave that
---exM was faster in 95 of 100 cases.
+--exM was faster in 98 of 100 cases.
 
 --Compare execution times of exM and expM with specified input
 exMFasterThanExpM :: Integer -> Integer -> Integer -> IO Bool
@@ -155,6 +155,8 @@ checkExecutionTime n results = do
   y <- getRandomInt (0,2000000)
   z <- getRandomInt (0,2000000)
   result <- exMFasterThanExpM x y z
+  passedFailed <- return (if result then "Passed" else "Failed")
+  print (passedFailed ++ " on input " ++ show x ++ "," ++ show y ++ "," ++ show z)
   checkExecutionTime (n-1) (result:results)
 
 --Get a random Int between -100 and 100
