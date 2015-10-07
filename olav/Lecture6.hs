@@ -163,7 +163,7 @@ checkExecutionTime n results = do
   print (passedFailed ++ " on input " ++ show x ++ "," ++ show y ++ "," ++ show z)
   checkExecutionTime (n-1) (result:results)
 
---Get a random Int between -100 and 100
+--Get a random Int between given bounds
 --Based strongly on getRandomInt from lecture 2,
 --found at http://homepages.cwi.nl/~jve/courses/15/testing/lectures/Lecture2.html
 getRandomInt :: (Integer,Integer) -> IO Integer
@@ -228,7 +228,7 @@ primeMR k n = let
     f = \ x -> takeWhile (/= 1) 
       (map (\ j -> exM x (2^j*s) n)  [0..r])
   in 
-    do 
+    do
       a <- randomRIO (1, n-1) :: IO Integer
       if exM a (n-1) n /= 1 
         then return False 
@@ -237,7 +237,7 @@ primeMR k n = let
             then return False
             else primeMR (k-1) n
 
---Exercise 6 (the first one)
+--Exercise 6 (the sixth one)
 
 {-Carmichal numbers seem to pass primeMR much less often than they pass prime_tests_F. On
 my first attempt the first Carmichael number passing primeMR with k=1 was 2301745249, the
@@ -247,7 +247,7 @@ eight Carmichael number, and the first Carmichael number passing primeMR with k=
 test_primeMR_carmichael :: Int -> IO Integer
 test_primeMR_carmichael k = test_prime_test primeMR k carmichael
 
---Exercise 6 (the second one)
+--Exercise 6 (the seventh one)
 
 {-In thirty seconds, mersennePrimesMR 1 found 13 numbers, all of which were in
 realMersennePrimes (the collection of the first 25 Mersenne primes which were specified
@@ -265,6 +265,26 @@ mersennePrimesMR' k (x:xs) = do
 
 realMersennePrimes = [m1,m2,m3,m4,m5,m6,m7,m8,m9,m10,m11,m12,m13,m14,m15,m16,m17,m18,m19,
                       m20,m21,m22,m23,24,m25]
+
+--Exercise 7 (the eight one)
+
+--Generate a pair of random primes with a random bitlength between 2048 and 
+randomLargePrimePair :: IO (Integer,Integer)
+randomLargePrimePair = do
+  x <- randomPrime range
+  y <- randomPrime range
+  return (x,y)
+  where
+  bitLength = 2048 --sufficiënt based on https://en.wikipedia.org/wiki/Key_size
+  range = (2^(bitLength-1),2^bitLength-1)
+
+randomPrime :: (Integer,Integer) -> IO Integer
+randomPrime (l,h) = do
+  n <- randomRIO (l,h)
+  prime <- primeMR k n
+  if prime then return n else randomPrime (l,h)
+  where
+    k = 1
 
 encodeDH :: Integer -> Integer -> Integer -> Integer
 encodeDH p k m = m*k `mod` p
