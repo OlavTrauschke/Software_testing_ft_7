@@ -75,7 +75,7 @@ exM' :: Integer -> Integer -> Integer -> Integer -> Integer
 exM' r _ 0 n = rem r n
 exM' r x 1 n = multM r x n
 exM' r x y n = let
-    (exp,rem) = if y == 0 then (0,0) else splitPowersOfTwo y
+    (exp,rem) = splitPowersOfTwo y
     res = multM r (exM'' x exp n) n
   in exM' res x rem n
 
@@ -86,6 +86,7 @@ exM'' x exp n = exM'' (expM x 2 n) (exp-1) n
 
 --Based on decomp, but getting the highest power of two out, no matter any remainder
 splitPowersOfTwo :: Integer -> (Integer,Integer)
+splitPowersOfTwo 0 = (0,0)
 splitPowersOfTwo n = let
     (l,m) = splitPowersOfTwo' (0,n)
   in (log2 l,m)
@@ -171,7 +172,7 @@ getRandomInt = getStdRandom.randomR
 
 prime_test_F :: Integer -> IO Bool
 prime_test_F n = do 
-  a <- randomRIO (1, n-1) :: IO Integer
+  a <- randomRIO (1, n-1)
   return (exM a (n-1) n == 1)
 
 prime_tests_F :: Int -> Integer -> IO Bool
@@ -229,7 +230,7 @@ primeMR k n = let
       (map (\ j -> exM x (2^j*s) n)  [0..r])
   in 
     do
-      a <- randomRIO (1, n-1) :: IO Integer
+      a <- randomRIO (1, n-1)
       if exM a (n-1) n /= 1 
         then return False 
         else 
