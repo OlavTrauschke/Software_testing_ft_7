@@ -69,46 +69,11 @@ expM x y = rem (x^y)
 
 --Tested using quickCheck prop_exMEqualsExpM, which passed all 100 tests
 exM :: Integer -> Integer -> Integer -> Integer
-exM = exM' 1
-
-exM' :: Integer -> Integer -> Integer -> Integer -> Integer
-exM' r _ 0 n = rem r n
-exM' r x 1 n = multM r x n
-exM' r x y n = let
-    (exp,rem) = splitPowersOfTwo y
-    res = multM r (exM'' x exp n) n
-  in exM' res x rem n
-
-exM'' :: Integer -> Integer -> Integer -> Integer
-exM'' 0 _   _ = 0
-exM'' x 1   n = expM x 2 n
-exM'' x exp n = exM'' (expM x 2 n) (exp-1) n
-
---Based on decomp, but getting the highest power of two out, no matter any remainder
-splitPowersOfTwo :: Integer -> (Integer,Integer)
-splitPowersOfTwo 0 = (0,0)
-splitPowersOfTwo n = let
-    (l,m) = splitPowersOfTwo' (0,n)
-  in (log2 l,m)
-
-splitPowersOfTwo' (m,n)
-   | n < nextM - m = (m,n)
-   | otherwise = splitPowersOfTwo' (nextM,n-nextM+m)
-   where
-     nextM
-       | m == 0    = 2
-       | otherwise = 2*m
-
---Integer logarithm with base 2.
---Useful answers are only provided for powers of two with a positive exponent, otherwise 0.
-log2 :: Integer -> Integer
-log2 n 
-  | n == 0 = 0
-  | otherwise = (fst.log2') (0,n)
-  where
-    log2' (m,n)
-      | rem n 2 == 0 = log2' (m+1,div n 2)
-      | otherwise = (m,n)
+exM _ _ 1 = 0
+exM b 0 m = 1
+exM b e m
+  | odd e     = multM b (exM b (e-1) m) m
+  | otherwise = exM (multM b b m) (e `div` 2) m
 
 decomp :: Integer -> (Integer,Integer)
 decomp n = decomp' (0,n) where
