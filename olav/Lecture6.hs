@@ -97,44 +97,38 @@ uncurry3 f (x,y,z) = f x y z
 
 --Exercise 2
 
---To check exM is faster than expM we ran "checkExecutionTime 100 []". This test gave that
---exM was faster in 98 of 100 cases.
+{-To check exM is faster than expM we ran
+"checkExecutionTime 100 (uncurry3 normalizeParams) (uncurry3 exM) (uncurry3 expM)". This
+test gave that exM was faster in 98 of 100 cases.-}
 
---Compare execution times of exM and expM with specified input
-exMFasterThanExpM :: Integer -> Integer -> Integer -> IO Bool
-exMFasterThanExpM x y z
-  | z == 0 = return True
-  | otherwise = do
-      startExM <- getCPUTime
-      exMResult <- return $! (exM x y z)
-      endExM <- getCPUTime
-      startExpM <- getCPUTime
-      expMResult <- return $! (expM x y z)
-      endExpM <- getCPUTime
-      return ((endExM - startExM) < (endExpM - startExpM))
+--Compare execution times of two functions n times on arbitrary input
+checkExecutionTime :: (Arbitrary a,Show a) => Int -> (a -> a) -> (a -> b) -> (a -> b)
+                      -> IO String
+checkExecutionTime = checkExecutionTime' []
 
---Compare execution times n times on random Integers
---The second argument is for keeping the result and should be an empty list when calling
---this function from another function
-checkExecutionTime :: Int -> [Bool] -> IO String
-checkExecutionTime 0 results = do
+checkExecutionTime' :: (Arbitrary a,Show a) => [Bool] -> Int -> (a -> a) -> (a -> b)
+                       -> (a -> b) -> IO String
+checkExecutionTime' results 0 _ _ _ = do
   testsRan <- (return.length) results
   faster <- (return.sum.(map fromEnum)) results
   return ("Faster in " ++ show faster ++ " of " ++ show testsRan ++ " cases.")
-checkExecutionTime n results = do
-  x <- getRandomInt (0,2000000)
-  y <- getRandomInt (0,2000000)
-  z <- getRandomInt (0,2000000)
-  result <- exMFasterThanExpM x y z
-  passedFailed <- return (if result then "Passed" else "Failed")
-  print (passedFailed ++ " on input " ++ show x ++ "," ++ show y ++ "," ++ show z)
-  checkExecutionTime (n-1) (result:results)
+checkExecutionTime' results n normalizer f g = do
+  xUnnormalized <- generate arbitrary
+  x <- return (normalizer xUnnormalized)
+  print ("Input: " ++ show x)
+  result <- fasterThan f g x
+  print (if result then "Faster" else "Slower")
+  checkExecutionTime' (result:results) (n-1) normalizer f g
 
---Get a random Int between given bounds
---Based strongly on getRandomInt from lecture 2,
---found at http://homepages.cwi.nl/~jve/courses/15/testing/lectures/Lecture2.html
-getRandomInt :: (Integer,Integer) -> IO Integer
-getRandomInt = getStdRandom.randomR
+--Determine whether the first provided function runs faster than the second
+fasterThan :: (a -> b) -> (a -> b) -> a -> IO Bool
+fasterThan f g x = do
+  startF <- getCPUTime
+  resultF <- return $! (f x)
+  endF <- getCPUTime
+  resultG <- return $! (g x)
+  endG <- getCPUTime
+  return ((endF - startF) < (endG - endF))
 
 prime_test_F :: Integer -> IO Bool
 prime_test_F n = do 
