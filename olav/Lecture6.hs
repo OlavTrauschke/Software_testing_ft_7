@@ -68,6 +68,7 @@ expM x y = rem (x^y)
 --Exercise 1
 
 --Tested using quickCheck prop_exMEqualsExpM, which passed all 100 tests
+--Refactored implementation of code by Joryd
 exM :: Integer -> Integer -> Integer -> Integer
 exM _ _ 1 = 0
 exM b 0 m = 1
