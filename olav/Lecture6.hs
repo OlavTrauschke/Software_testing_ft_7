@@ -97,28 +97,30 @@ uncurry3 f (x,y,z) = f x y z
 
 --Exercise 2
 
-{-To check exM is faster than expM we ran
-"checkExecutionTime 100 (uncurry3 normalizeParams) (uncurry3 exM) (uncurry3 expM)". This
-test gave that exM was faster in 98 of 100 cases.-}
+{-To check exM is faster than expM we ran "check 100". This test gave that ....-}
 
---Compare execution times of two functions n times on arbitrary input
-checkExecutionTime :: (Arbitrary a,Show a) => Int -> (a -> a) -> (a -> b) -> (a -> b)
+check :: Int -> IO String
+check n = checkExecutionTime n (1000000,1000000,1000000) (9999999,9999999,9999999)
+                             (uncurry3 exM) (uncurry3 expM)
+
+--Compare execution times of two functions n times on arbitrary input between specified
+--limits
+checkExecutionTime :: (Random a,Show a) => Int -> a -> a -> (a -> b) -> (a -> b)
                       -> IO String
 checkExecutionTime = checkExecutionTime' []
 
-checkExecutionTime' :: (Arbitrary a,Show a) => [Bool] -> Int -> (a -> a) -> (a -> b)
-                       -> (a -> b) -> IO String
-checkExecutionTime' results 0 _ _ _ = do
+checkExecutionTime' :: (Random a,Show a) => [Bool] -> Int -> a -> a -> (a -> b) -> (a -> b)
+                       -> IO String
+checkExecutionTime' results 0 _ _ _ _ = do
   testsRan <- (return.length) results
   faster <- (return.sum.(map fromEnum)) results
   return ("Faster in " ++ show faster ++ " of " ++ show testsRan ++ " cases.")
-checkExecutionTime' results n normalizer f g = do
-  xUnnormalized <- generate arbitrary
-  x <- return (normalizer xUnnormalized)
+checkExecutionTime' results n min max f g = do
+  x <- randomRIO (min,max)
   print ("Input: " ++ show x)
   result <- fasterThan f g x
   print (if result then "Faster" else "Slower")
-  checkExecutionTime' (result:results) (n-1) normalizer f g
+  checkExecutionTime' (result:results) (n-1) min max f g
 
 --Determine whether the first provided function runs faster than the second
 fasterThan :: (a -> b) -> (a -> b) -> a -> IO Bool
@@ -129,6 +131,13 @@ fasterThan f g x = do
   resultG <- return $! (g x)
   endG <- getCPUTime
   return ((endF - startF) < (endG - endF))
+
+instance (Random a,Random b,Random c) => Random (a,b,c) where
+  randomRIO ((minX,minY,minZ),(maxX,maxY,maxZ)) = do
+    x <- randomRIO (minX,maxX)
+    y <- randomRIO (minY,maxY)
+    z <- randomRIO (minZ,maxZ)
+    return (x,y,z)
 
 prime_test_F :: Integer -> IO Bool
 prime_test_F n = do 
