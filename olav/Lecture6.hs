@@ -97,7 +97,8 @@ uncurry3 f (x,y,z) = f x y z
 
 --Exercise 2
 
-{-To check exM is faster than expM we ran "check 100". This test gave that ....-}
+{-To check exM is faster than expM we ran "check 100". This test gave that exM "ran 100.0%
+faster on average", meaning exM ran in less than 0.05% of the time expM ran in on average.-}
 
 check :: Int -> IO String
 check n = checkExecutionTime n (1000000,1000000,1000000) (9999999,9999999,9999999)
@@ -109,28 +110,30 @@ checkExecutionTime :: (Random a,Show a) => Int -> a -> a -> (a -> b) -> (a -> b)
                       -> IO String
 checkExecutionTime = checkExecutionTime' []
 
-checkExecutionTime' :: (Random a,Show a) => [Bool] -> Int -> a -> a -> (a -> b) -> (a -> b)
+checkExecutionTime' :: (Random a,Show a) => [Int] -> Int -> a -> a -> (a -> b) -> (a -> b)
                        -> IO String
 checkExecutionTime' results 0 _ _ _ _ = do
   testsRan <- (return.length) results
-  faster <- (return.sum.(map fromEnum)) results
-  return ("Faster in " ++ show faster ++ " of " ++ show testsRan ++ " cases.")
+  averageDifference <- return ((fromIntegral.sum) results / fromIntegral testsRan)
+  return ("The first function ran " ++ show averageDifference ++ " % faster on average.")
 checkExecutionTime' results n min max f g = do
   x <- randomRIO (min,max)
-  print ("Input: " ++ show x)
-  result <- fasterThan f g x
-  print (if result then "Faster" else "Slower")
+  result <- timeDifference f g x
   checkExecutionTime' (result:results) (n-1) min max f g
 
---Determine whether the first provided function runs faster than the second
-fasterThan :: (a -> b) -> (a -> b) -> a -> IO Bool
-fasterThan f g x = do
+--Determine the percentage of the execution time of the second provided function the first
+--provided function takes less
+timeDifference :: (a -> b) -> (a -> b) -> a -> IO Int
+timeDifference f g x = do
   startF <- getCPUTime
   resultF <- return $! (f x)
   endF <- getCPUTime
   resultG <- return $! (g x)
   endG <- getCPUTime
-  return ((endF - startF) < (endG - endF))
+  timeF <- return (endF - startF)
+  timeG <- return (endG - endF)
+  difference <- return (timeG - timeF)
+  return (round (fromIntegral difference / fromIntegral timeG * 100))
 
 instance (Random a,Random b,Random c) => Random (a,b,c) where
   randomRIO ((minX,minY,minZ),(maxX,maxY,maxZ)) = do
