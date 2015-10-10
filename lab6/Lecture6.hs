@@ -62,13 +62,16 @@
   expM ::  Integer -> Integer -> Integer -> Integer
   expM x y = rem (x^y)
 
-  -- Our new (and fastest) implementation
+  -- Assignment 2 found the code from rosetta code the fastest,
+  -- thus we're using that for the further calculations.
   exM :: Integer -> Integer -> Integer -> Integer
-  exM _ _ 1 = 0
-  exM _ 0 _ = 1
-  exM b e m
-     | odd e       = exM b (e-1) m * b `mod` m
-     | otherwise   = exM (b * b `mod` m) (e `div` 2) m
+  exM b e m = powm b e m 1
+
+  powm :: Integer -> Integer -> Integer -> Integer -> Integer
+  powm _ _ 1 _ = 0
+  powm b 0 m r = r
+  powm b e m r | odd e = powm (b * b `mod` m) (e `div` 2) m (r * b `mod` m)
+  powm b e m r = powm (b * b `mod` m) (e `div` 2) m r
 
   prime_test_F :: Integer -> IO Bool
   prime_test_F n = do 
