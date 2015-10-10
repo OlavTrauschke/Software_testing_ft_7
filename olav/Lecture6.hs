@@ -235,27 +235,6 @@ mersennePrimesMR' k (x:xs) = do
 
 realMersennePrimes = [m1,m2,m3,m4,m5,m6,m7,m8,m9,m10,m11,m12,m13,m14,m15,m16,m17,m18,m19,
                       m20,m21,m22,m23,24,m25]
-
---Exercise 7 (the eight one)
-
---Generate a pair of random primes with a random bitlength between 2048 and 
-randomLargePrimePair :: IO (Integer,Integer)
-randomLargePrimePair = do
-  x <- randomPrime range
-  y <- randomPrime range
-  return (x,y)
-  where
-  bitLength = 2048 --sufficiënt based on https://en.wikipedia.org/wiki/Key_size
-  range = (2^(bitLength-1),2^bitLength-1)
-
-randomPrime :: (Integer,Integer) -> IO Integer
-randomPrime (l,h) = do
-  n <- randomRIO (l,h)
-  prime <- primeMR k n
-  if prime then return n else randomPrime (l,h)
-  where
-    k = 1
-
 encodeDH :: Integer -> Integer -> Integer -> Integer
 encodeDH p k m = m*k `mod` p
 
