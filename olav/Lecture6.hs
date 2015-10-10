@@ -117,7 +117,7 @@ checkExecutionTime' results 0 _ _ _ _ = do
   testsRan <- (return.length) results
   averagePercentage <- return (sum results / fromIntegral testsRan)
   return ("The first function ran in " ++ show averagePercentage
-          ++ " % of the time the second function ran in on average.")
+          ++ "% of the time the second function ran in on average.")
 checkExecutionTime' results n min max f g = do
   x <- randomRIO (min,max)
   result <- timeDifference f g x
@@ -127,14 +127,16 @@ checkExecutionTime' results n min max f g = do
 --provided function takes less
 timeDifference :: (a -> b) -> (a -> b) -> a -> IO Double
 timeDifference f g x = do
+  timeF <- measureTime f x
+  timeG <- measureTime g x
+  return (timeF / timeG * 100)
+
+measureTime :: (a -> b) -> a -> IO Double
+measureTime f x = do
   startF <- getTime
   resultF <- return $! f x
   endF <- getTime
-  resultG <- return $! g x
-  endG <- getTime
-  timeF <- return (endF - startF)
-  timeG <- return (endG - endF)
-  return (timeF / timeG * 100)
+  return (endF - startF)
 
 getTime :: IO Double
 getTime = liftM realToFrac getPOSIXTime
