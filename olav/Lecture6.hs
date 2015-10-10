@@ -84,12 +84,12 @@ decomp n = decomp' (0,n) where
 prop_exMEqualsExpM :: Integer -> Integer -> Integer -> Bool
 prop_exMEqualsExpM x y z 
   | z == 0 = True
-  | otherwise = let w = normalizeParams x y z in (uncurry3 expM) w == (uncurry3 exM) w
+  | otherwise = let w = normalizeParams x y z in uncurry3 expM w == uncurry3 exM w
 
 normalizeParams :: Integer -> Integer -> Integer -> (Integer,Integer,Integer)
 normalizeParams x y z
   | z <  0    = normalizeParams x y (-z)
-  | y < 0     = (x,(-y),z)
+  | y < 0     = (x,-y,z)
   | otherwise = (x,y,z)
 
 uncurry3 :: (a -> b -> c -> d) -> (a,b,c) -> d
@@ -128,9 +128,9 @@ checkExecutionTime' results n min max f g = do
 timeDifference :: (a -> b) -> (a -> b) -> a -> IO Double
 timeDifference f g x = do
   startF <- getTime
-  resultF <- return $! (f x)
+  resultF <- return $! f x
   endF <- getTime
-  resultG <- return $! (g x)
+  resultG <- return $! g x
   endG <- getTime
   timeF <- return (endF - startF)
   timeG <- return (endG - endF)
@@ -202,17 +202,13 @@ primeMR _ 2 = return True
 primeMR 0 _ = return True
 primeMR k n = let 
     (r,s) = decomp (n-1) 
-    f = \ x -> takeWhile (/= 1) 
-      (map (\ j -> exM x (2^j*s) n)  [0..r])
+    f x = takeWhile (/= 1) (map (\ j -> exM x (2^j*s) n)  [0..r])
   in 
     do
       a <- randomRIO (1, n-1)
-      if exM a (n-1) n /= 1 
+      if (exM a (n-1) n /= 1) || (exM a s n /= 1 && last (f a) /= (n-1))
         then return False 
-        else 
-          if exM a s n /= 1 && last (f a) /= (n-1) 
-            then return False
-            else primeMR (k-1) n
+        else primeMR (k-1) n
 
 --Exercise 6 (the sixth one)
 
