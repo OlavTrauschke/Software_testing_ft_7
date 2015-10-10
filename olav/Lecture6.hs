@@ -4,8 +4,8 @@ where
 
 import Control.Monad
 import Data.List
+import Data.Time.Clock.POSIX
 import System.Random
-import System.CPUTime
 import Test.QuickCheck
 
 factors_naive :: Integer -> [Integer]
@@ -97,8 +97,9 @@ uncurry3 f (x,y,z) = f x y z
 
 --Exercise 2
 
-{-To check exM is faster than expM we ran "check 100". This test gave that exM "ran 100.0%
-faster on average", meaning exM ran in less than 0.05% of the time expM ran in on average.-}
+{-To check exM is faster than expM we ran "check 100". This test gave that exM "ran in 0.0%
+of the time" expM "ran in on average", meaning exM ran in less than 0.05% of the time expM
+ran in on average.-}
 
 check :: Int -> IO String
 check n = checkExecutionTime n (1000000,1000000,1000000) (9999999,9999999,9999999)
@@ -110,12 +111,13 @@ checkExecutionTime :: (Random a,Show a) => Int -> a -> a -> (a -> b) -> (a -> b)
                       -> IO String
 checkExecutionTime = checkExecutionTime' []
 
-checkExecutionTime' :: (Random a,Show a) => [Int] -> Int -> a -> a -> (a -> b) -> (a -> b)
-                       -> IO String
+checkExecutionTime' :: (Random a,Show a) => [Double] -> Int -> a -> a -> (a -> b)
+                       -> (a -> b) -> IO String
 checkExecutionTime' results 0 _ _ _ _ = do
   testsRan <- (return.length) results
-  averageDifference <- return ((fromIntegral.sum) results / fromIntegral testsRan)
-  return ("The first function ran " ++ show averageDifference ++ " % faster on average.")
+  averagePercentage <- return (sum results / fromIntegral testsRan)
+  return ("The first function ran in " ++ show averagePercentage
+          ++ " % of the time the second function ran in on average.")
 checkExecutionTime' results n min max f g = do
   x <- randomRIO (min,max)
   result <- timeDifference f g x
@@ -123,17 +125,19 @@ checkExecutionTime' results n min max f g = do
 
 --Determine the percentage of the execution time of the second provided function the first
 --provided function takes less
-timeDifference :: (a -> b) -> (a -> b) -> a -> IO Int
+timeDifference :: (a -> b) -> (a -> b) -> a -> IO Double
 timeDifference f g x = do
-  startF <- getCPUTime
+  startF <- getTime
   resultF <- return $! (f x)
-  endF <- getCPUTime
+  endF <- getTime
   resultG <- return $! (g x)
-  endG <- getCPUTime
+  endG <- getTime
   timeF <- return (endF - startF)
   timeG <- return (endG - endF)
-  difference <- return (timeG - timeF)
-  return (round (fromIntegral difference / fromIntegral timeG * 100))
+  return (timeF / timeG * 100)
+
+getTime :: IO Double
+getTime = liftM realToFrac getPOSIXTime
 
 instance (Random a,Random b,Random c) => Random (a,b,c) where
   randomRIO ((minX,minY,minZ),(maxX,maxY,maxZ)) = do
