@@ -29,9 +29,20 @@ module Assignment1 where
       | odd e     = multM b (exMO b (e-1) m) m
       | otherwise = exMO (multM b b m) (e `div` 2) m
 
-
+    -- quickCheck property. Takes two modular exponentiation functions, and checks if the output matches.
     prop_expM :: (Integer -> Integer -> Integer -> Integer) -> (Integer -> Integer -> Integer -> Integer) -> Positive Integer -> NonNegative Integer -> Positive Integer -> Bool
     prop_expM f1 f2 (Positive b) (NonNegative e) (Positive m) = f1 b e m == f2 b e m
+
+    exCheck :: IO ()
+    exCheck = do
+        putStrLn "Checking Floris' implementation"
+        quickCheck (prop_expM expM exMF)
+        putStrLn "Checking Olav's implementation"
+        quickCheck (prop_expM expM exMO)
+        putStrLn "Checking Jordy's implementation"
+        quickCheck (prop_expM expM exMJ)
+        putStrLn "Checking Rosetta Code implementation"
+        quickCheck (prop_expM expM powmR')
 
     -- Code from rosetta code altered to fix mod 1
     powmR :: Integer -> Integer -> Integer -> Integer -> Integer
@@ -41,3 +52,16 @@ module Assignment1 where
     powmR b e m r = powmR (b * b `mod` m) (e `div` 2) m r
 
     powmR' b e m = powmR b e m 1
+
+    {-
+     - *Assignment1> exCheck 
+     - Checking Floris' implementation
+     - +++ OK, passed 100 tests.
+     - Checking Olav's implementation
+     - +++ OK, passed 100 tests.
+     - Checking Jordy's implementation
+     - +++ OK, passed 100 tests.
+     - Checking Rosetta Code implementation
+     - +++ OK, passed 100 tests.
+     -
+     -}

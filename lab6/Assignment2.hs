@@ -3,18 +3,22 @@ module Assignment2 where
     import Lecture6
     import Assignment1
     import System.Random
-    import System.CPUTime
+    import Data.Time.Clock.POSIX
+    import Control.Monad
+    import Text.Printf
     import Criterion.Main -- cabal install criterion
 
     {-
      - While testing the performance of our different implementations of the modular exponentiation function, some interesting results arrised.
-     - Our are much alike, as they are both from the same idea. But the implementation of floris does seem slightly faster in all usecases described here.
+     - Our implementations are much alike, as they are all from the same idea. But the implementation of floris does seem slightly faster in all usecases described here.
      - Finaly the original implementation is in the smallest cases quicker than any of our implementations, this is expected, as our implementations
-     - have much more to calculate, and squaring and dividing is not that much of a problem on smaller numbers. When numbers get bigger though, is
-     - when this implementation breaks down. While our implementation does not even take twice as much time calculating m7^m8 mod m9 over m6^m7 mod m8,
+     - have much more to calculate, and squaring and calculating the remainder is not that much of a problem on smaller numbers. When numbers get bigger though, is
+     - when this naive implementation breaks down. While our implementation does not even take twice as much time calculating m7^m8 mod m9 over m6^m7 mod m8,
      - the original implementation is four times slower. The next calculation is even so expensive, that haskell crashes before it can return a value,
      - due to being out of memory. And m6 and m7 are not even close to a prime of 1024 bits, which is (at least) needed for a safe private key.
      - (https://www.google.nl/webhp?sourceid=chrome-instant&ion=1&espv=2&ie=UTF-8#q=rsa+minimum+key+size)
+     - Olav's test function also shows this. When the range of test input is small, the original naive function is quicker with an anwser. While as the input gets
+     - larger, the time it takes skyrockets, while the new implementation is almoast just as fast.
      -}
 
     -- Implementation of the criterion performance test, for all 5 implementations.
@@ -52,12 +56,13 @@ module Assignment2 where
         ]
 
     -- Olav's implementation of a custom performance test.
-    {-To check exM is faster than expM we ran "check 100". This test gave that exM "ran 100.0%
-    faster on average", meaning exM ran in less than 0.05% of the time expM ran in on average.-}
+    {-To check exM is faster than expM we ran "check 100". This test gave that exM "ran in 0.0%
+    of the time" expM "ran in on average", meaning exM ran in less than 0.05% of the time expM
+    ran in on average.-}
 
-    check :: Int -> IO String
-    check n = checkExecutionTime n (1000000,1000000,1000000) (9999999,9999999,9999999)
-                                 (uncurry3 powmR') (uncurry3 expM)
+    check :: Int -> (Integer, Integer) -> (Integer -> Integer -> Integer -> Integer) -> (Integer -> Integer -> Integer -> Integer) -> IO String
+    check n (x,y) f g = checkExecutionTime n (x,x,x) (y,y,y)
+                                 (uncurry3 f) (uncurry3 g)
 
     --Compare execution times of two functions n times on arbitrary input between specified
     --limits
@@ -65,12 +70,17 @@ module Assignment2 where
                           -> IO String
     checkExecutionTime = checkExecutionTime' []
 
-    checkExecutionTime' :: (Random a,Show a) => [Int] -> Int -> a -> a -> (a -> b) -> (a -> b)
-                           -> IO String
+    checkExecutionTime' :: (Random a,Show a) => [(Double,Double)] -> Int -> a -> a -> (a -> b)
+                           -> (a -> b) -> IO String
     checkExecutionTime' results 0 _ _ _ _ = do
       testsRan <- (return.length) results
-      averageDifference <- return ((fromIntegral.sum) results / fromIntegral testsRan)
-      return ("The first function ran " ++ show averageDifference ++ " % faster on average.")
+      (timeF,timeG) <- return (foldl (\(a,b) (x, y) -> (a+x,b+y)) (0,0) results)
+      averageTimeDifference <- if timeF > timeG then return $ (timeF / timeG - 1) * 100 else return $ (timeG / timeF - 1) * 100
+      if timeF > timeG
+        then
+            return $ printf "The second function ran %.2f%% faster than the first function, on average. (%.6fs vs %.6fs)" averageTimeDifference (timeF/(fromIntegral testsRan)) (timeG/(fromIntegral testsRan))
+        else
+            return $ printf "The first function ran %.2f%% faster than the second function, on average. (%.6fs vs %.6fs)" averageTimeDifference (timeF/(fromIntegral testsRan)) (timeG/(fromIntegral testsRan))
     checkExecutionTime' results n min max f g = do
       x <- randomRIO (min,max)
       result <- timeDifference f g x
@@ -78,17 +88,21 @@ module Assignment2 where
 
     --Determine the percentage of the execution time of the second provided function the first
     --provided function takes less
-    timeDifference :: (a -> b) -> (a -> b) -> a -> IO Int
+    timeDifference :: (a -> b) -> (a -> b) -> a -> IO (Double, Double)
     timeDifference f g x = do
-      startF <- getCPUTime
-      resultF <- return $! (f x)
-      endF <- getCPUTime
-      resultG <- return $! (g x)
-      endG <- getCPUTime
-      timeF <- return (endF - startF)
-      timeG <- return (endG - endF)
-      difference <- return (timeG - timeF)
-      return (round (fromIntegral difference / fromIntegral timeG * 100))
+      timeF <- measureTime f x
+      timeG <- measureTime g x
+      return (timeF,timeG)
+
+    measureTime :: (a -> b) -> a -> IO Double
+    measureTime f x = do
+      startF <- getTime
+      resultF <- return $! f x
+      endF <- getTime
+      return (endF - startF)
+
+    getTime :: IO Double
+    getTime = liftM realToFrac getPOSIXTime
 
     instance (Random a,Random b,Random c) => Random (a,b,c) where
       randomRIO ((minX,minY,minZ),(maxX,maxY,maxZ)) = do
@@ -101,6 +115,19 @@ module Assignment2 where
     uncurry3 f (x,y,z) = f x y z
 
     {-
+        *Assignment2> check 100 (10,100) expM exM
+        "The first function ran 80.89% faster than the second function, on average. (0.001280s vs 0.002315s)"
+        *Assignment2> check 100 (100,1000) expM exM
+        "The first function ran 68.77% faster than the second function, on average. (0.001819s vs 0.003069s)"
+        *Assignment2> check 100 (1000,10000) expM exM
+        "The second function ran 594.74% faster than the first function, on average. (0.000280s vs 0.000040s)"
+        *Assignment2> check 100 (10000,100000) expM exM
+        "The second function ran 15034.04% faster than the first function, on average. (0.007985s vs 0.000053s)"
+        *Assignment2> check 100 (100000,1000000) expM exM
+        "The second function ran 202142.71% faster than the first function, on average. (0.144708s vs 0.000072s)"
+        *Assignment2> check 100 (1000000,10000000) expM exM
+        "The second function ran 2570372.35% faster than the first function, on average. (2.100231s vs 0.000082s)"
+
         ------------------->> BENCHMARKS <<-------------------
         - JORDY ----------------------------------------------
 
@@ -281,6 +308,6 @@ module Assignment2 where
         variance introduced by outliers: 27% (moderately inflated)
 
         benchmarking expMOrg/m6^m7 mod m8
-        FAILED, after a couple of hours and having hogged 20gb of memory was still not done.
+        FAILED, after a couple of hours and having hogged 20gb of memory (on a laptop with 4gb), was still not done.
 
     -}
