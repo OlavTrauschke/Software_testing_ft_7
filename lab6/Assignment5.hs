@@ -13,7 +13,7 @@ module Assignment5 where
     {-
      - By running 'findSmallestFooler [n] (prime_tests_F [k]) carmichael' with n being the number of tests and k the k for the Fermat's Primality Check,
      - we can see what the smallest carmichael number is which fools the test.
-     - With n = 1000 we should be able to find a smallest carmichael number which fools the primality check.
+     - With n = 100 we should be able to find a smallest carmichael number which fools the primality check.
      -
      - *Assignment5> findSmallestFooler 100 (prime_tests_F 1) carmichael
      - 294409

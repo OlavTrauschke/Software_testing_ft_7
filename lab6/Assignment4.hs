@@ -45,5 +45,5 @@ module Assignment4 where
      - 1105
      - 
      - What can bee seen is that with k 1-5 the check is not very effective, as the lowest composite to fool the fermat's primality check is 4.
-     - From k > 7 the found foolers are in the list of carmichael numbers.
+     - From k > 7 the found foolers are in the list of carmichael numbers, which are very likely to pass this test.
      -}

@@ -44,14 +44,14 @@ module Assignment6 where
      - The mersenneGenCheck [n] [k] function will check the generated mersenne prime list, with the actuall prime list from the lecture.
      - By testing the generator 50 times, should give an indication of if the generator is likely of generating correct lists.
      -
-     - *Assignment6> mersenneGenCheck 50 1
+     - *Assignment6> mersenneGenCheck 100 1
      - False
-     - *Assignment6> mersenneGenCheck 50 2
-     - True
-     - *Assignment6> mersenneGenCheck 50 3
+     - *Assignment6> mersenneGenCheck 100 2
+     - False
+     - *Assignment6> mersenneGenCheck 100 3
      - True
      -
-     - The conclusion from this is that for generating the first 15 mersene primes, k > 1 is already sufficient to generate a correct list
+     - The conclusion from this is that for generating the first 15 mersene primes, k > 2 is already sufficient to generate a likely correct list
      - of 15 mersenne primes.
      -
      -}

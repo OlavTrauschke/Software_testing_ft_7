@@ -8,7 +8,7 @@ module Assignment5b where
     {-
      - By running 'findSmallestFooler [n] (primeMR [k]) carmichael' with n being the number of tests and k the k for the Miller-Rabin's Primality Check,
      - we can see what the smallest carmichael number is which fools the test.
-     - With n = 1000 we should be able to find a smallest carmichael number which fools the primality check.
+     - With n = 100 we should be able to find a smallest carmichael number which fools the primality check.
      -
      - *Assignment5> findSmallestFooler 100 (primeMR 1) carmichael
      - 294409
